@@ -22,6 +22,9 @@ return new class extends Migration
             $table->double('stock');
             $table->unsignedBigInteger('product_category_id')->nullable();
             $table->unsignedBigInteger('unit_id')->nullable();
+            $table->unsignedBigInteger('created_by')->nullable();
+            $table->unsignedBigInteger('updated_by')->nullable();
+            $table->unsignedBigInteger('deleted_by')->nullable();
             $table->enum('status', ['active','inactive']);
             $table->timestamps();
             $table->softDeletes();

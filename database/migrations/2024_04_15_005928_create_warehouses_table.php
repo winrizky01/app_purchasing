@@ -20,8 +20,11 @@ return new class extends Migration
             $table->string("contact_person")->nullable();
             $table->string("contact_person_number")->nullable();
             $table->enum("status", ["active", "inactive"]);
-            $table->softDeletes();
             $table->timestamps();
+            $table->softDeletes();
+            $table->unsignedBigInteger('created_by')->nullable();
+            $table->unsignedBigInteger('updated_by')->nullable();
+            $table->unsignedBigInteger('deleted_by')->nullable();
 
             $table->foreign('created_by')->references('id')->on('users')->cascadeOnDelete();
             $table->foreign('updated_by')->references('id')->on('users')->cascadeOnDelete();
