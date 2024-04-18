@@ -99,8 +99,7 @@
                                     </div>
                                     <div class="col">
                                         <label class="form-label" for="machine_id">For Machine</label>
-                                        <select id="machine_id" name="machine_id" class="form-select select2" data-allow-clear="true">
-                                            <option value="">Select Value</option>
+                                        <select id="machine_id" name="machine_id[]" class="form-select select2" data-allow-clear="true" multiple>
                                         </select>
                                     </div>
                                 </div>
@@ -145,7 +144,7 @@
     <script type="text/javascript">
         var existingProductCategoryId = <?php echo json_encode($data->product_category_id); ?>;
         var existingUnitId            = <?php echo json_encode($data->unit_id); ?>;
-        var existingMachineId         = <?php echo json_encode($data->machine_id); ?>;
+        var existingMachineId         = <?php echo json_encode($data->product_machine); ?>;
 
         $(document).ready(function() {
             requestSelectAjax({
@@ -189,13 +188,29 @@
             }
             else if(optionType == 'machine'){
                 id = "#machine_id";
-                existingId = existingMachineId;
+                existingId = [];
+
+                for(var i=0; i<existingMachineId.length;i++){
+                    existingId.push({
+                        id: existingMachineId[i].machine_id,
+                        name: existingMachineId[i].machine.name
+                    });
+                }
             }
 
             $.each(response.results, function(index, data) {
                 var option = '<option value="' + data.id + '">' + data.name + '</option>';
-                if (existingId && existingId == data.id) {
-                    option = '<option value="' + data.id + '" selected>' + data.name + '</option>';
+                if(existingId.length > 1){
+                    for(var i=0; i < existingId.length; i++){
+                        if (existingId[i].id && existingId[i].id == data.id) {
+                            option = '<option value="' + data.id + '" selected>' + data.name + '</option>';
+                        }
+                    }
+                }
+                else{
+                    if (existingId && existingId == data.id) {
+                        option = '<option value="' + data.id + '" selected>' + data.name + '</option>';
+                    }
                 }
                 $(id).append(option);
             });

@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Session;
 
 use App\Models\Product;
 use App\Models\ProductSerial;
+use App\Models\ProductMachine;
 use App\Models\General;
 
 use DB;
@@ -103,6 +104,20 @@ class ProductController extends Controller
             return handleErrorResponse($request, 'The following fields are required !', 'master/product', 404, null);
         }
 
+        $check_product_category = General::find($request->product_category_id);
+        if($check_product_category->name == "Sparepart"){
+            $validator = Validator::make($request->all(),[
+                'dimension'     => 'required',
+                'part_number'   => 'required',
+                'machine_id'    => 'required',
+                'spesification' => 'required',
+            ]);
+    
+            if($validator->fails()){
+                return handleErrorResponse($request, 'The following fields are required (Dimension, Part Number, For Machine) !', 'master/product', 404, null);
+            }
+        }
+
         DB::beginTransaction();
         try {
             $file  = "";
@@ -121,8 +136,8 @@ class ProductController extends Controller
                 'is_inventory'  => $request->is_inventory,
                 'dimension'     => $request->dimension,
                 'part_number'   => $request->part_number,
-                'machine_id'    => $request->machine_id,
                 "description"   => $request->description,
+                "spesification" => $request->spesification,
                 "photo"         => $photo !== "" ? 'template/assets/img/products/'.$photo : null,
                 "status"        => $request->status,
                 "created_at"    => date("Y-m-d H:i:s"),
@@ -132,6 +147,16 @@ class ProductController extends Controller
             if($product){
                 if($photo != ""){
                     $file->move(public_path('template/assets/img/products/'), $photo);
+                }
+
+                if($request->machine_id){
+                    foreach($request->machine_id as $machine){
+                        ProductMachine::create([
+                            'product_id' => $product->id,
+                            'machine_id' => $machine,
+                            "created_at" => date("Y-m-d H:i:s"),
+                        ]);
+                    }
                 }
             }
         } catch (Exception $e) {
@@ -157,7 +182,7 @@ class ProductController extends Controller
 
     public function edit(Request $request, $id)
     {
-        $product = Product::find($id);
+        $product = Product::with(['product_unit','product_category','product_machine.machine'])->find($id);
         if(!$product){
             return handleErrorResponse($request, 'Opps, data not found!', 'master/product', 404, null);
         }
@@ -197,6 +222,20 @@ class ProductController extends Controller
             return handleErrorResponse($request, 'The following fields are required !', 'master/product', 404, null);
         }
 
+        $check_product_category = General::find($request->product_category_id);
+        if($check_product_category->name == "Sparepart"){
+            $validator = Validator::make($request->all(),[
+                'dimension'     => 'required',
+                'part_number'   => 'required',
+                'machine_id'    => 'required',
+                'spesification' => 'required',
+            ]);
+    
+            if($validator->fails()){
+                return handleErrorResponse($request, 'The following fields are required (Dimension, Part Number, For Machine) !', 'master/product', 404, null);
+            }
+        }
+
         $product = Product::find($id);
         if(!$product){
             return handleErrorResponse($request, 'Opps, data not found!', 'master/product', 404, null);
@@ -212,8 +251,8 @@ class ProductController extends Controller
             $product->is_inventory  = $request->is_inventory;
             $product->dimension     = $request->dimension;
             $product->part_number   = $request->part_number;
-            $product->machine_id    = $request->machine_id;
             $product->description   = $request->description;
+            $product->spesification = $request->spesification;
             $product->status        = $request->status;
             $product->updated_at    = date("Y-m-d H:i:s");
             $product->updated_by    = auth()->user()->id;
@@ -225,6 +264,18 @@ class ProductController extends Controller
                 $file->move(public_path('template/assets/img/products/'), $photo);
             }
             $product->save();
+
+            if($request->machine_id){
+                ProductMachine::where("product_id", $id)->delete();
+                foreach($request->machine_id as $machine){
+                    ProductMachine::create([
+                        'product_id' => $id,
+                        'machine_id' => $machine,
+                        "created_at" => date("Y-m-d H:i:s"),
+                    ]);
+                }
+            }
+
         }
         catch (Exception $e) {
             DB::rollback();
@@ -295,7 +346,7 @@ class ProductController extends Controller
             $where[] = ['products.product_category_id', $request->product_category_id];
         }
 
-        $data = Product::with(['product_unit','product_category','product_machine'])->where($where)->get();
+        $data = Product::with(['product_unit','product_category','product_machine.machine'])->where($where)->get();
         return datatables()->of($data)->toJson();
     }
 }

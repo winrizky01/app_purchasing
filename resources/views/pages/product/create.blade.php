@@ -87,8 +87,7 @@
                                     </div>
                                     <div class="col">
                                         <label class="form-label" for="machine_id">For Machine</label>
-                                        <select id="machine_id" name="machine_id" class="form-select select2" data-allow-clear="true">
-                                            <option value="">Select Value</option>
+                                        <select id="machine_id" name="machine_id[]" class="form-select select2" data-allow-clear="true" multiple>
                                         </select>
                                     </div>
                                 </div>

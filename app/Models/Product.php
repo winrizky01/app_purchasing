@@ -24,6 +24,6 @@ class Product extends Model
 
     public function product_machine()
     {
-        return $this->belongsTo(General::class, 'machine_id','id');
+        return $this->hasMany(ProductMachine::class, 'product_id','id');
     }
 }
