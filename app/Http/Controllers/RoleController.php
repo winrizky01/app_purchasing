@@ -113,7 +113,7 @@ class RoleController extends Controller
                     $subChild   = trim($explode[2]) === "" ? null : $explode[2];
                     
                     $roleDetail = RoleDetail::create([
-                        "role_id"               => $id,
+                        "role_id"               => $role->id,
                         "menu_parent_id"        => $parent,
                         "menu_children_id"      => $child,
                         "menu_sub_children_id"  => $subChild,
@@ -243,11 +243,11 @@ class RoleController extends Controller
         }
     }
 
-    public function delete(Request $request, $id)
+    public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
         $role = Role::find($id);
-        if(!$user){
+        if(!$role){
             return handleErrorResponse($request, 'Opps, data not found.', 'setting/role', 404, null);
         }
 

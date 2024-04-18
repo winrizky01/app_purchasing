@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 
-use App\Models\Warehouse;
+use App\Models\Department;
 
 use DB;
 use Redirect;
@@ -14,17 +14,17 @@ use DataTables;
 use Exception;
 use Validator;
 
-class WarehouseController extends Controller
+class DepartmentController extends Controller
 {
     public function select(Request $request)
     {
-        $query = Warehouse::select(["id", "name", "name as text"]);
+        $query = Department::select(["id", "name", "name as text"]);
         $query = $query->get();
 
         if($request->expectsJson() || $request->ajax()){
             return response()->json([
                 'status' => true,
-                'message'=> "Warehouse successfuly access",
+                'message'=> "Department successfuly access",
                 'code'   => 200,
                 'results'=> $query
             ], 200);
@@ -45,12 +45,12 @@ class WarehouseController extends Controller
                 $limit = $request->limit;
             }
             if($request->id != ""){
-                $where[] = ["warehouses.id", $request->id];
+                $where[] = ["departments.id", $request->id];
             }
 
             $offset = ($page - 1) * $limit;
             
-            $query = Warehouse::where($where)->orderBy("warehouses.id", "ASC");
+            $query = Department::where($where)->orderBy("departments.id", "ASC");
             if ($limit > 0) {
                 $query = $query->offset($offset)->limit($limit)->paginate($limit);
             } 
@@ -60,15 +60,15 @@ class WarehouseController extends Controller
 
             return response()->json([
                         'status' => true,
-                        'message'=> "Warehouse successfuly access",
+                        'message'=> "Department successfuly access",
                         'code'   => 200,
                         'results'=> $query
                     ], 200);
         }
         else {
-            $data["title"] = "List Warehouse";
+            $data["title"] = "List Department";
 
-            $view = "pages.warehouse.index";
+            $view = "pages.department.index";
             return view($view, $data);
         }
 
@@ -86,17 +86,14 @@ class WarehouseController extends Controller
         ]);
 
         if($validator->fails()){
-            return handleErrorResponse($request, 'The following fields are required !', 'master/warehouse', 404, null);
+            return handleErrorResponse($request, 'The following fields are required !', 'master/department', 404, null);
         }
 
         DB::beginTransaction();
         try {
-            $warehouse = Warehouse::create([
+            $department = Department::create([
                 "code"       => $request->code,
                 "name"       => $request->name,
-                "location"   => $request->location,
-                "contact_person"        => $request->contact_person,
-                "contact_person_number" => $request->contact_person_number,
                 "description"=> $request->description,
                 "status"     => $request->status,
                 "created_at" => date("Y-m-d H:i:s"),
@@ -104,7 +101,7 @@ class WarehouseController extends Controller
             ]);
         } catch (Exception $e) {
             DB::rollback();
-            return handleErrorResponse($request, $e->getMessage(), 'master/warehouse', 404, null);
+            return handleErrorResponse($request, $e->getMessage(), 'master/department', 404, null);
         }
 
         DB::commit();
@@ -119,7 +116,7 @@ class WarehouseController extends Controller
         }
         else{
             Session::put('success','Data successfuly created.');
-            return redirect()->to('master/warehouse');
+            return redirect()->to('master/department');
         }
     }
 
@@ -135,30 +132,27 @@ class WarehouseController extends Controller
         ]);
 
         if($validator->fails()){
-            return handleErrorResponse($request, 'The following fields are required !', 'master/warehouse', 404, null);
+            return handleErrorResponse($request, 'The following fields are required !', 'master/department', 404, null);
         }
 
-        $warehouse = Warehouse::find($id);
-        if(!$warehouse){
-            return handleErrorResponse($request, 'Opps, data not found!', 'master/warehouse', 404, null);
+        $department = Department::find($id);
+        if(!$department){
+            return handleErrorResponse($request, 'Opps, data not found!', 'master/department', 404, null);
         }
 
         DB::beginTransaction();
         try {
-            $warehouse->code       = $request->code;
-            $warehouse->name       = $request->name;
-            $warehouse->location   = $request->location;
-            $warehouse->contact_person        = $request->contact_person;
-            $warehouse->contact_person_number = $request->contact_person_number;
-            $warehouse->description= $request->description;
-            $warehouse->status     = $request->status;
-            $warehouse->updated_at = date("Y-m-d H:i:s");
-            $warehouse->updated_by = auth()->user()->id;
-            $warehouse->save();
+            $department->code       = $request->code;
+            $department->name       = $request->name;
+            $department->description= $request->description;
+            $department->status     = $request->status;
+            $department->updated_at = date("Y-m-d H:i:s");
+            $department->updated_by = auth()->user()->id;
+            $department->save();
         }
         catch (Exception $e) {
             DB::rollback();
-            return handleErrorResponse($request, $e->getMessage(), 'master/warehouse', 404, null);
+            return handleErrorResponse($request, $e->getMessage(), 'master/department', 404, null);
         }
 
         DB::commit();
@@ -173,27 +167,27 @@ class WarehouseController extends Controller
         }
         else{
             Session::put('success','Data successfuly updated.');
-            return redirect()->to('master/warehouse');
+            return redirect()->to('master/department');
         }
     }
 
     public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
-        $warehouse = Warehouse::find($id);
-        if(!$warehouse){
-            return handleErrorResponse($request, 'Opps, data not found.', 'master/warehouse', 404, null);
+        $department = Department::find($id);
+        if(!$department){
+            return handleErrorResponse($request, 'Opps, data not found.', 'master/department', 404, null);
         }
 
         try {
-            $warehouse->status     = "inactive";
-            $warehouse->deleted_at = date("Y-m-d H:i:s");
-            $warehouse->deleted_by = auth()->user()->id;
-            $warehouse->save();
-            $warehouse->delete();
+            $department->status     = "inactive";
+            $department->deleted_at = date("Y-m-d H:i:s");
+            $department->deleted_by = auth()->user()->id;
+            $department->save();
+            $department->delete();
         } catch (Exception $e) {
             DB::rollBack();
-            return handleErrorResponse($request, 'Opps, data failed to delete.', 'master/warehouse', 404, null);
+            return handleErrorResponse($request, 'Opps, data failed to delete.', 'master/department', 404, null);
         }
 
         DB::commit();
@@ -208,7 +202,7 @@ class WarehouseController extends Controller
         }
         else {
             Session::put('success','Data successfuly deleted.');
-            return redirect()->to('master/warehouse');
+            return redirect()->to('master/department');
         }
     }
 
@@ -216,13 +210,13 @@ class WarehouseController extends Controller
     {
         $where = [];
         if($request->name != ""){
-            $where[] = ["warehouses.name", "LIKE", "%".$request->name."%"];
+            $where[] = ["departments.name", "LIKE", "%".$request->name."%"];
         }
         if($request->status != ""){
-            $where[] = ['warehouses.status', $request->status];
+            $where[] = ['departments.status', $request->status];
         }
 
-        $data = Warehouse::where($where)->get();
+        $data = Department::where($where)->get();
         return datatables()->of($data)->toJson();
     }
 }

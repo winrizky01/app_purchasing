@@ -171,6 +171,7 @@
                 destroy   : true,
                 processing: true,
                 serverSide: true,
+                pageLength: 5,
                 ajax: {
                     url : ajaxUrl,
                     data: ajaxData
@@ -190,6 +191,7 @@
                     search: '',
                     searchPlaceholder: 'Search..'
                 },
+                lengthMenu: [ [5, 10, 15, -1], [5, 10, 15, "All"] ],
                 buttons: buttons,
             });
         }
@@ -206,6 +208,30 @@
                     console.error("Request failed: " + error);
                 }
             });
+        }
+
+        function filePreview(input) {
+            if (input.files && input.files[0]) {
+                if((input.files[0].type == 'image/png')||(input.files[0].type == 'image/jpg')||(input.files[0].type == 'image/jpeg')){
+                }
+                else{
+                    toasMassage({status:false, message:'Opps, tipe gambar tidak sesuai!'});
+                    $('#media').val('');
+                    return false;
+                }
+
+                if(input.files[0].size > 2000000){
+                    toasMassage({status:false, message:'Opps, ukuran gambar tidak sesuai!'});
+                    $('#media').val('');
+                    return false;
+                }
+
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $('#tempImage').attr('src',e.target.result);
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
         }
     </script>
 </body>

@@ -22,6 +22,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
+        'user_location_id',
+        'status',
         'created_by',
         'updated_by',
         'deleted_by'
@@ -50,6 +53,12 @@ class User extends Authenticatable
     public function role()
     {
         return $this->hasOne(Role::class, 'id','role');
+
+    }
+
+    public function user_location()
+    {
+        return $this->hasOne(General::class, 'id','user_location_id');
 
     }
 }

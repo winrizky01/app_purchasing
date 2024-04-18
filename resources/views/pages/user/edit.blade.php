@@ -6,25 +6,11 @@
         <div class="col-12">
             <div id="alert"></div>
 
-            {{-- @if (session('error'))
-            <div class="alert alert-danger alert-dismissible" role="alert">
-                {{ session('error') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            @endif
-            
-            @if (session('success'))
-            <div class="alert alert-success alert-dismissible" role="alert">
-                {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            @endif         --}}
-
             <div class="card">
-                <h5 class="card-header">{{ $title }}</h5>
-                <div class="card-body">
-                    <form id="form" action="{{ url('master/user/update'.'/'.$data->id) }}" method="POST" class="row g-3">
-                        @csrf
+                <h5 class="card-header border-bottom">{{ $title }}</h5>
+                <form id="form" action="{{ url('master/user/update'.'/'.$data->id) }}" method="POST">
+                    @csrf
+                    <div class="card-body row g-3">
                         <div class="col-md-6">
                             <label class="form-label" for="name">Full Name</label>
                             <input type="text" id="name" class="form-control" placeholder="John Doe" name="name" value="{{ $data->name }}" required />
@@ -68,6 +54,12 @@
                             </select>
                         </div>
                         <div class="col-md-6">
+                            <label class="form-label" for="user_location_id">User Location</label>
+                            <select id="user_location_id" name="user_location_id" class="select2 form-select" data-allow-clear="true" required >
+                                <option value="">Select</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
                             <label class="form-label" for="status">Status</label>
                             <select id="status" name="status" class="form-select select2" data-allow-clear="true" required >
                                 <option value="">Select</option>
@@ -83,13 +75,12 @@
                                 @endFor
                             </select>
                         </div>
-
-                        <div class="col-12">
-                            <a href="{{ url('master/user') }}" class="btn btn-secondary btn-sm">Cancel</a>
-                            <button type="submit" name="submitButton" class="btn btn-primary btn-sm">Submit</button>
-                        </div>
-                    </form>
-                </div>
+                    </div>
+                    <div class="card-footer border-top py-3">
+                        <a href="{{ url('master/user') }}" class="btn btn-secondary btn-sm">Cancel</a>
+                        <button type="submit" name="submitButton" class="btn btn-primary btn-sm">Submit</button>
+                    </div>
+                </form>
             </div>
         </div>
         <!-- /FormValidation -->
@@ -98,6 +89,7 @@
  
 <script type="text/javascript">
     var existingRoleId = <?php echo json_encode($data->role); ?>;
+    var existingUserLocationId = <?php echo json_encode($data->user_location_id); ?>;
 
     $(document).ready(function(){
         requestSelectAjax({
@@ -105,7 +97,14 @@
                 'data': [],
                 'optionType' : 'role',
                 'type': 'GET'
-            });
+        });
+        requestSelectAjax({
+            'url' : '{{ url("setting/general/select?type=user_location_id") }}',
+            'data': [],
+            'optionType' : 'user_location',
+            'type': 'GET'
+        });
+
 
         $('form').submit(function(event){
             // Memeriksa apakah kedua kolom memiliki nilai yang sama
@@ -125,6 +124,11 @@
             id = "#role_id";
             existingId = existingRoleId;
         }
+        else if(optionType == 'user_location'){
+            id = "#user_location_id";
+            existingId = existingUserLocationId;
+        }
+
 
         $.each(response.results, function(index, data) {
             var option = '<option value="' + data.id + '">' + data.name + '</option>';

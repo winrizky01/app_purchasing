@@ -6,10 +6,10 @@
                 <div id="alert"></div>
 
                 <div class="card">
-                    <h5 class="card-header">{{ $title }}</h5>
-                    <div class="card-body">
-                        <form id="form" action="{{ url('setting/role/update').'/'.$data->id }}" method="POST" class="row g-3">
-                            @csrf
+                    <h5 class="card-header border-bottom">{{ $title }}</h5>
+                    <form id="form" action="{{ url('setting/role/update').'/'.$data->id }}" method="POST">
+                        @csrf
+                        <div class="card-body row g-3">
                             <div class="col-md-6">
                                 <label class="form-label" for="name">Role Name</label>
                                 <input type="text" id="name" class="form-control" placeholder="John Doe"
@@ -94,12 +94,12 @@
                                     <div class="divider-text">List Role Detail</div>
                                 </div>
                             </div>
-                            <div class="col-12">
-                                <a href="{{ url('setting/role') }}" class="btn btn-secondary btn-sm">Cancel</a>
-                                <button type="submit" class="btn btn-primary btn-sm">Submit</button>
-                            </div>
-                        </form>
-                    </div>
+                        </div>                        
+                        <div class="card-footer border-top py-3">
+                            <a href="{{ url('setting/role') }}" class="btn btn-secondary btn-sm">Cancel</a>
+                            <button type="submit" class="btn btn-primary btn-sm">Submit</button>
+                        </div>
+                    </form>
                 </div>
             </div>
             <!-- /FormValidation -->
@@ -215,7 +215,6 @@
             });
 
             $('form').submit(function(event) {
-                alert();
             })
         })
 
