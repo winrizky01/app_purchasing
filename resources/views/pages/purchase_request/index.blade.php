@@ -140,7 +140,7 @@
                 render: function(data, type, full, meta) {
                     return (
                         '<div class="d-flex align-items-center">' +
-                            '<a href="{{ url("inventory/material-request/edit") }}/' + full.id +
+                            '<a href="{{ url("master/product/edit") }}/' + full.id +
                             '" class="text-body edit-record"><i class="ti ti-edit ti-sm me-2"></i></a>' +
                             '<a href="javascript:;" class="text-body delete-record"><i class="ti ti-trash ti-sm mx-2"></i></a>' +
                         '</div>'
@@ -151,9 +151,9 @@
         var buttons     =  [
             {
                 className: 'btn btn-primary mx-3 btn-sm',
-                text: 'Add Material Request',
+                text: 'Add Purchase Request',
                 action: function() {
-                    window.location.href = '{{url("inventory/material-request/create")}}'; // Ganti URL_ANDA_DISINI dengan URL yang diinginkan
+                    window.location.href = '{{url("purchasing/purchase-request/create")}}'; // Ganti URL_ANDA_DISINI dengan URL yang diinginkan
                 }
             }, 
         ]

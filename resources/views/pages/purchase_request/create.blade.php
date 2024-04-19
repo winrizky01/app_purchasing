@@ -13,7 +13,7 @@
                         <div class="card-body row g-3">
                             <div class="row mb-3">
                                 <div class="col">
-                                    <label class="form-label" for="product_category_id">Type Material Request</label>
+                                    <label class="form-label" for="product_category_id">Type Purchase Request</label>
                                     @php
                                         $readOnly = '';
                                         $value = '';
@@ -94,11 +94,12 @@
 
                             <div class="col-md-12">
                                 <div class="divider">
-                                    <div class="divider-text">Material Request Detail</div>
+                                    <div class="divider-text">Purchase Request Detail</div>
                                 </div>
                             </div>
-                            <div class="col-md-2">
-                                <button class="btn btn-sm btn-primary" type="button" id="showModal">Add Product</button>
+                            <div class="col-md-4">
+                                <button class="btn btn-sm btn-warning" type="button" id="showModal" data-mode="showPurchase">From MR</button>
+                                <button class="btn btn-sm btn-primary" type="button" id="showModal" data-mode="showProduct">Add Product</button>
                             </div>
                             <div class="col-md-12">
                                 <table class="table" id="listMaterialDetail">
@@ -116,7 +117,7 @@
                             </div>
                             <div class="col-md-12">
                                 <div class="divider">
-                                    <div class="divider-text">Material Request Detail</div>
+                                    <div class="divider-text">Purchase Request Detail</div>
                                 </div>
                             </div>
                         </div>
