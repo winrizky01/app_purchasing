@@ -75,6 +75,22 @@
 
                 Route::delete('/delete/{id}', [App\Http\Controllers\MaterialRequestController::class, 'destroy']);
             });
+
+            Route::prefix('material-usage')->group(function(){
+                Route::get('/', [App\Http\Controllers\MaterialUsageController::class, 'index']);
+                Route::get('/create', [App\Http\Controllers\MaterialUsageController::class, 'create']);
+                Route::get('/edit/{id}', [App\Http\Controllers\MaterialUsageController::class, 'edit']);
+                Route::get('/dataTables', [App\Http\Controllers\MaterialUsageController::class, 'dataTables']);
+                Route::get('/select', [App\Http\Controllers\MaterialUsageController::class, 'select']);
+                Route::get('/select', [App\Http\Controllers\MaterialUsageController::class, 'select']);
+                Route::get('/print/{id}', [App\Http\Controllers\MaterialUsageController::class, 'print']);
+
+                Route::post('/store', [App\Http\Controllers\MaterialRequestController::class, 'store']);
+                Route::post('/update/{id}', [App\Http\Controllers\MaterialRequestController::class, 'update']);
+
+                Route::delete('/delete/{id}', [App\Http\Controllers\MaterialRequestController::class, 'destroy']);
+            });
+
         });
 
         Route::prefix('master')->group(function(){
