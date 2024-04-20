@@ -53,12 +53,12 @@ class MaterialRequestController extends Controller
                 $limit = $request->limit;
             }
             if($request->id != ""){
-                $where[] = ["products.id", $request->id];
+                $where[] = ["material_requests.id", $request->id];
             }
 
             $offset = ($page - 1) * $limit;
             
-            $query = Product::where($where)->orderBy("products.id", "ASC");
+            $query = MaterialRequest::where($where)->orderBy("material_requests.id", "ASC");
             if ($limit > 0) {
                 $query = $query->offset($offset)->limit($limit)->paginate($limit);
             } 
@@ -68,7 +68,7 @@ class MaterialRequestController extends Controller
 
             return response()->json([
                         'status' => true,
-                        'message'=> "Product successfuly access",
+                        'message'=> "Material Request successfuly access",
                         'code'   => 200,
                         'results'=> $query
                     ], 200);
@@ -97,53 +97,51 @@ class MaterialRequestController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(),[
-            'product_category_id' => 'required',
-            'name'      => 'required',
-            'code'      => 'required',
-            'sku'       => 'required',
-            'unit_id'   => 'required',
-            'is_inventory'  => 'required',
-            'status'    => 'required'
+            'date'              => 'required',
+            'request_date'      => 'required',
         ]);
 
         if($validator->fails()){
-            return handleErrorResponse($request, 'The following fields are required !', 'master/product', 404, null);
+            return handleErrorResponse($request, 'The following fields are required !', 'inventory/material-request', 404, null);
         }
 
         DB::beginTransaction();
         try {
-            $file  = "";
-            $photo = "";
-            if ($request->hasFile('media')) {
-                $file     = $request->file('media');
-                $photo    = str_replace(" ", "-", $file->getClientOriginalName());
-            }
-
-            $product = Product::create([
-                'product_category_id' => $request->product_category_id,
-                'name'          => $request->name,
-                'code'          => $request->code,
-                'sku'           => $request->sku,
-                'unit_id'       => $request->unit_id,
-                'is_inventory'  => $request->is_inventory,
-                'dimension'     => $request->dimension,
-                'part_number'   => $request->part_number,
-                'machine_id'    => $request->machine_id,
-                "description"   => $request->description,
-                "photo"         => $photo !== "" ? 'template/assets/img/products/'.$photo : null,
-                "status"        => $request->status,
-                "created_at"    => date("Y-m-d H:i:s"),
-                "created_by"    => auth()->user()->id,
+            $materialRequest = MaterialRequest::create([
+                'type_material_request'     => $request->type_material_request,
+                'code'                      => $request->code,
+                'date'                      => $request->date,
+                'request_date'              => $request->request_date,
+                'department_id'             => $request->department_id,
+                'division_id'               => $request->division_id,
+                'justification'             => $request->justification,
+                'remark_id'                 => $request->remark_id,
+                "description"               => $request->description,
+                "created_at"                => date("Y-m-d H:i:s"),
+                "created_by"                => auth()->user()->id,
             ]);
-
-            if($product){
-                if($photo != ""){
-                    $file->move(public_path('template/assets/img/products/'), $photo);
-                }
+            if($materialRequest){
+                if ($request->material_request_details) {
+                    foreach ($request->material_request_details as $key => $value) {
+                        $materialRequestDetail = MaterialRequestDetail::create([
+                            'material_request_id'       => $materialRequest->id,
+                            'product_id'                => $request->product_id[$key],
+                            'qty'                       => $request->qty[$key],
+                            'notes'                     => $request->notes[$key],
+                        ]);
+                        if (!$materialRequestDetails) {
+                            DB::rollback();
+                            $result['success'] = false;
+                            $result['message'] = 'Gagal membuat data material request details';
+                            echo json_encode($result);
+                            return;
+                        }
+                    }
+                }    
             }
         } catch (Exception $e) {
             DB::rollback();
-            return handleErrorResponse($request, $e->getMessage(), 'master/product', 404, null);
+            return handleErrorResponse($request, $e->getMessage(), 'inventory/material-request', 404, null);
         }
 
         DB::commit();
