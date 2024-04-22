@@ -13,10 +13,14 @@ function generateCodeDocument($transactionType){
 
     }
 
-    $last_code      = substr($last_document->code, 0, 3);
-    $count_string   = strlen($last_code);
-    $stringToInt    = ($last_code * 1) + 1;
-    $newCountString = strlen($stringToInt);
+    $last_code = "000";
+    if($last_document){
+        $last_code = substr($last_document->code, 0, 3); // ambil 3 digit diawal
+    }
+
+    $count_string   = strlen($last_code); // hitung total string
+    $stringToInt    = ($last_code * 1) + 1; // tambahkan 1 angka setiap kode akhir
+    $newCountString = strlen($stringToInt); // hitung ulang total string
     $new_code       = "";
     for($i=0; $i<($count_string-$newCountString); $i++){
         $new_code = $new_code."0";
