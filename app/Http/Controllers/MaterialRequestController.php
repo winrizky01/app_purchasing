@@ -89,11 +89,20 @@ class MaterialRequestController extends Controller
             return handleErrorResponse($request, 'Opps, sorry you dont have access!', 'purchasing/material-request', 404, null);
         }
 
-
-        $data["title"] = "Add Material Request";
-        $data["document_number"] = generateCodeDocument("MR");
-        $view = "pages.material_request.create";
-        return view($view, $data);
+        if($request->expectsJson() || $request->ajax()){
+            return response()->json([
+                'status' => true,
+                'message'=> "Product successfuly access",
+                'code'   => 200,
+                'results'=> ["code"=>generateCodeDocument("MR",$request->division_id)]
+            ], 200);
+        }
+        else{
+            $data["title"] = "Add Material Request";
+            $data["document_number"] = generateCodeDocument("MR",false);
+            $view = "pages.material_request.create";
+            return view($view, $data);
+        }
     }
 
     public function store(Request $request)

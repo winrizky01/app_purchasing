@@ -234,10 +234,11 @@
             });
 
             $('#division_id').change(function() {
+                console.log($(this).val())
                 requestAjax({
-                    'url' : '{{ url("master/division?id='+$(this).val()+'") }}',
+                    'url' : '{{ url("inventory/material-request/create?division_id=") }}' + $(this).val(),
                     'data': [],
-                    'optionType' : 'division',
+                    'optionType' : 'generate_code_document',
                     'type': 'GET'
                 });
             });
@@ -296,11 +297,24 @@
         }
 
         function handleRequestAjax(optionType, response){
-            if(optionType == "division"){
-                var code_document = $('#code').val();
-                var code_division = code_document.split('/');
-                var new_code_document = code_division[0] + '/' + code_division[1] + '/' + response.results[0].code.toUpperCase() + '/' + code_division[3] + '/' + code_division[4];
-                $('#code').val(new_code_document);
+            if(optionType == "generate_code_document"){
+                console.log(response.results.code);
+                // var code_document = $('#code').val();
+                // var code_division = code_document.split('/');
+                // var new_code_document = code_division[0] + '/' + code_division[1] + '/' + response.results[0].code.toUpperCase() + '/' + code_division[3] + '/' + code_division[4];
+                $('#code').val(response.results.code);
+
+                // $.ajax({
+                //     url     : '{{ url("inventory/material-request/create?division_id='+response.results[0].id+'") }}',
+                //     method  : 'GET',
+                //     data    : [],
+                //     success : function(response) {
+                //         console.log(response)
+                //     },
+                //     error: function(xhr, status, error) {
+                //         console.error("Request failed: " + error);
+                //     }
+                // });
             }
         }
 

@@ -4,10 +4,21 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\DB;
 
 use App\Models\MaterialRequest;
+use App\Models\Division;
 
-function generateCodeDocument($transactionType){
+function generateCodeDocument($transactionType, $division=false){
+    if($division == false){
+        $division = 1;
+        $division_name = "UMUM";
+    }
+    else{
+        $division = $division;
+        $division_name = Division::find($division);
+        $division_name = strtoupper($division_name->code);
+    }
+
     if($transactionType == "MR"){
-        $last_document  = MaterialRequest::where("division_id", 1)->where("date","LIKE","%".date("Y-m")."%")->orderBy("id", "DESC")->first();
+        $last_document  = MaterialRequest::where("division_id", $division)->where("date","LIKE","%".date("Y-m")."%")->orderBy("id", "DESC")->first();
     }
     else if($transactionType == "PR"){
 
@@ -43,7 +54,7 @@ function generateCodeDocument($transactionType){
         case 12:$month="XII";
     }
 
-    $newDocumentCode = $new_code."/".$transactionType."/UMUM/".$month."/".date("Y");
+    $newDocumentCode = $new_code."/".$transactionType."/".$division_name."/".$month."/".date("Y");
 
     return $newDocumentCode;
 }
