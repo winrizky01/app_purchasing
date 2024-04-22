@@ -22,6 +22,10 @@ class GeneralController extends Controller
         if($request->type != ""){
             $query = $query->where("type",$request->type);
         }
+        if($request->whereIn != ""){
+            $explode = explode("-", $request->whereIn);
+            $query = $query->whereIn("name", $explode);
+        }
         $query = $query->get();
 
         if($request->expectsJson() || $request->ajax()){

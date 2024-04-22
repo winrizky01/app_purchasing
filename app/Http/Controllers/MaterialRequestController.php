@@ -7,10 +7,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 
-use App\Models\Product;
-use App\Models\ProductSerial;
-use App\Models\General;
 use App\Models\Role;
+use App\Models\General;
+use App\Models\Product;
+use App\Models\MaterialRequest;
+use App\Models\MaterialRequestDetail;
 
 use DB;
 use Redirect;
@@ -88,8 +89,9 @@ class MaterialRequestController extends Controller
             return handleErrorResponse($request, 'Opps, sorry you dont have access!', 'purchasing/material-request', 404, null);
         }
 
+
         $data["title"] = "Add Material Request";
-        $data["document_number"] = "MR/MEPPO/ECI/XII/".date("Y");
+        $data["document_number"] = generateCodeDocument("MR");
         $view = "pages.material_request.create";
         return view($view, $data);
     }
@@ -110,31 +112,48 @@ class MaterialRequestController extends Controller
             $materialRequest = MaterialRequest::create([
                 'type_material_request'     => $request->type_material_request,
                 'code'                      => $request->code,
-                'date'                      => $request->date,
-                'request_date'              => $request->request_date,
+                'date'                      => date("Y-m-d", strtotime($request->date)),
+                'request_date'              => date("Y-m-d", strtotime($request->request_date)),
                 'department_id'             => $request->department_id,
                 'division_id'               => $request->division_id,
                 'justification'             => $request->justification,
                 'remark_id'                 => $request->remark_id,
-                "description"               => $request->description,
+                // "description"               => $request->description,
+                'document_status_id'        => $request->document_status_id,
                 "created_at"                => date("Y-m-d H:i:s"),
                 "created_by"                => auth()->user()->id,
             ]);
             if($materialRequest){
                 if ($request->material_request_details) {
                     foreach ($request->material_request_details as $key => $value) {
+                        $product_id = null;
+                        $qty        = null;
+                        $notes      = null;
+                        if($request->expectsJson()){
+                            $product_id = null;
+                            $qty        = null;
+                            $notes      = null;    
+                        }
+                        else{
+                            $product_id = $value["product_id"];
+                            $qty        = $value["product_qty"];
+                            $notes      = $value["product_note"];
+                        }
+
                         $materialRequestDetail = MaterialRequestDetail::create([
-                            'material_request_id'       => $materialRequest->id,
-                            'product_id'                => $request->product_id[$key],
-                            'qty'                       => $request->qty[$key],
-                            'notes'                     => $request->notes[$key],
+                            'material_request_id' => $materialRequest->id,
+                            'product_id' => $product_id,
+                            'qty'        => $qty,
+                            'notes'      => $notes,
                         ]);
-                        if (!$materialRequestDetails) {
+
+                        if (!$materialRequestDetail) {
                             DB::rollback();
-                            $result['success'] = false;
-                            $result['message'] = 'Gagal membuat data material request details';
-                            echo json_encode($result);
-                            return;
+                            return handleErrorResponse($request, "Opps, data failed created material request details", 'inventory/material-request', 404, null);
+                            // $result['success'] = false;
+                            // $result['message'] = 'Gagal membuat data material request details';
+                            // echo json_encode($result);
+                            // return;
                         }
                     }
                 }    
@@ -156,7 +175,7 @@ class MaterialRequestController extends Controller
         }
         else{
             Session::put('success','Data successfuly created.');
-            return redirect()->to('master/product');
+            return redirect()->to('inventory/material-request');
         }
     }
 
@@ -290,14 +309,14 @@ class MaterialRequestController extends Controller
     public function dataTables(Request $request)
     {
         $where = [];
-        if($request->name != ""){
-            $where[] = ["products.name", "LIKE", "%".$request->name."%"];
+        if($request->code != ""){
+            $where[] = ["material_requests.name", "LIKE", "%".$request->code."%"];
         }
         if($request->status != ""){
-            $where[] = ['products.status', $request->status];
+            $where[] = ['material_requests.document_status_id', $request->document_status_id];
         }
 
-        $data = Product::with(['product_unit'])->where($where)->get();
+        $data = MaterialRequest::with(['department','document_status'])->where($where)->get();
         return datatables()->of($data)->toJson();
     }
 

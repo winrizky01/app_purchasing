@@ -18,7 +18,10 @@ class DivisionController extends Controller
 {
     public function select(Request $request)
     {
-        $query = Division::select(["id", "name", "name as text"]);
+        $query = Division::select(["id", "name", "name as text", "code"]);
+        if($request->department_id != ""){
+            $query = $query->where("deparmtent_id", $request->department_id);
+        }
         $query = $query->get();
 
         if($request->expectsJson() || $request->ajax()){

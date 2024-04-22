@@ -13,37 +13,37 @@
                         <div class="card-body row g-3">
                             <div class="row mb-3">
                                 <div class="col">
-                                    <label class="form-label" for="product_category_id">No. Document</label>
-                                    <input type="text" class="form-control" id="document_number" name="document_number" value="{{ $document_number }}" readonly>
+                                    <label class="form-label" for="code">No. Document</label>
+                                    <input type="text" class="form-control" id="code" name="code" value="{{ $document_number }}" readonly>
                                 </div>
                                 <div class="col">
-                                    <label class="form-label" for="product_category_id">Date Document</label>
-                                    <input type="text" class="form-control" id="sku" name="sku"
+                                    <label class="form-label" for="date">Date Document</label>
+                                    <input type="text" class="form-control" id="date" name="date"
                                         value="{{ date('d-m-Y') }}" disabled>
                                 </div>
                             </div>
                             <div class="row mb-3">
                                 <div class="col">
-                                    <label class="form-label" for="product_category_id">Department</label>
-                                    <select class="form-select select2" data-allow-clear="true" required>
+                                    <label class="form-label" for="department_id">Department</label>
+                                    <select class="form-select select2" id="department_id" data-allow-clear="true" required>
                                         <option value="">Select Value</option>
                                     </select>
                                 </div>
                                 <div class="col">
-                                    <label class="form-label" for="product_category_id">Divisi</label>
-                                    <select class="form-select select2" data-allow-clear="true" required>
+                                    <label class="form-label" for="division_id">Divisi</label>
+                                    <select class="form-select select2" id="division_id" name="division_id" data-allow-clear="true" required>
                                         <option value="">Select Value</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="row mb-3">
                                 <div class="col mb-3">
-                                    <label class="form-label" for="product_category_id">Usage Date</label>
-                                    <input type="date" class="form-control" id="sku" name="sku">
+                                    <label class="form-label" for="request_date">Usage Date</label>
+                                    <input type="date" class="form-control" id="request_date" name="request_date">
                                 </div>
                                 <div class="col mb-3">
-                                    <label class="form-label" for="product_category_id">Warehouse</label>
-                                    <select class="form-select select2" data-allow-clear="true" required>
+                                    <label class="form-label" for="warehouse_id">Warehouse</label>
+                                    <select class="form-select select2" id="warehouse_id" name="warehouse_id" data-allow-clear="true" required>
                                         <option value="">Select Value</option>
                                     </select>
                                 </div>
@@ -165,18 +165,18 @@
                 'optionType' : 'product_category',
                 'type': 'GET'
             });
-            // requestSelectAjax({
-            //     'url' : '{{ url('setting/general/select?type=unit_id') }}',
-            //     'data': [],
-            //     'optionType' : 'unit',
-            //     'type': 'GET'
-            // });
-            // requestSelectAjax({
-            //     'url' : '{{ url('setting/general/select?type=machine_id') }}',
-            //     'data': [],
-            //     'optionType' : 'machine',
-            //     'type': 'GET'
-            // });
+            requestSelectAjax({
+                'url' : '{{ url('master/department/select') }}',
+                'data': [],
+                'optionType' : 'department',
+                'type': 'GET'
+            });
+            requestSelectAjax({
+                'url' : '{{ url('master/division/select') }}',
+                'data': [],
+                'optionType' : 'division',
+                'type': 'GET'
+            });
 
             $('#showModal').click(function() {
                 // Setup Datatable

@@ -210,6 +210,20 @@
             });
         }
 
+        function requestAjax(param){
+            $.ajax({
+                url     : param['url'],
+                method  : 'GET',
+                data    : param['data'],
+                success : function(response) {
+                    handleRequestAjax(param['optionType'], response);
+                },
+                error: function(xhr, status, error) {
+                    console.error("Request failed: " + error);
+                }
+            });
+        }
+
         function filePreview(input) {
             if (input.files && input.files[0]) {
                 if((input.files[0].type == 'image/png')||(input.files[0].type == 'image/jpg')||(input.files[0].type == 'image/jpeg')){

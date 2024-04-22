@@ -18,9 +18,9 @@
                                             <div class="d-flex align-items-center flex-column">
                                                 <label>Pict. Product</label>
                                                 @if ($data->photo != null)
-                                                <img class="img-fluid rounded mb-3 mt-3" id="tempImage" src="{{ url($data->photo) }}" height="250" width="250">
+                                                <img class="img-fluid rounded mb-3 mt-3" id="tempImage" src="{{ asset($data->photo) }}" height="250" width="250">
                                                 @else
-                                                <img class="img-fluid rounded mb-3 mt-3" id="tempImage" src="{{ url('template/assets/img/noimage.png') }}" height="250" width="250">
+                                                <img class="img-fluid rounded mb-3 mt-3" id="tempImage" src="{{ asset('template/assets/img/noimage.png') }}" height="250" width="250">
                                                 @endif
                                                 <input type="file" id="media" name="media" class="d-none"/>
                                                 <div class="user-info text-center">

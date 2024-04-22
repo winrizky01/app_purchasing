@@ -11,4 +11,10 @@ class MaterialRequestDetail extends Model
     use HasFactory, SoftDeletes;
 
     protected $guarded = [];
+
+    public function product()
+    {
+        return $this->hasOne(Product::class, 'product_id','id');
+    }
+
 }

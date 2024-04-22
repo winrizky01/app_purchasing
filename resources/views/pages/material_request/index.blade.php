@@ -65,9 +65,9 @@
                 <table class="datatables table border-top">
                     <thead>
                         <tr>
-                            <th>SKU</th>
-                            <th>Name</th>
-                            <th>Unit</th>
+                            <th>No. Document</th>
+                            <th>Request Date</th>
+                            <th>Department</th>
                             <th>Status</th>
                             <th>Actions</th>
                         </tr>
@@ -108,24 +108,35 @@
 
     <script type="text/javascript">
         // Setup Datatable
-        var ajaxUrl  = "{{ url('master/product/dataTables') }}";
+        var ajaxUrl  = "{{ url('inventory/material-request/dataTables') }}";
         var ajaxData = [];
-        var columns  = [{ data: 'sku' }, { data: 'name' }, {data: 'product_unit.name'}, { data: 'status' }, { data: 'action' }];
+        var columns  = [{ data: 'code' }, { data: 'request_date' }, {data: 'department.name'}, { data: 'status' }, { data: 'action' }];
         var columnDefs  =  [
             {
                 // User Status
                 targets: -2,
                 render: function(data, type, full, meta) {
                     var status = '';
-                    if ((full['status'] == 1) || (full['status'] == 'active')) {
-                        status =
-                            '<span class="badge bg-label-success" text-capitalized> Active </span>';
-                    } else if ((full['status'] == 2) || (full['status'] == 'inactive')) {
-                        status =
-                            '<span class="badge bg-label-secondary" text-capitalized> Inactive </span>';
-                    } else if ((full['status'] == 3) || (full['status'] == 'pending')) {
-                        status =
-                            '<span class="badge bg-label-warning" text-capitalized> Pending </span>';
+                    if(full['status']){
+                        if ((full['status'] == 1) || (full['status'] == 'active')) {
+                            status =
+                                '<span class="badge bg-label-success" text-capitalized> Active </span>';
+                        } else if ((full['status'] == 2) || (full['status'] == 'inactive')) {
+                            status =
+                                '<span class="badge bg-label-secondary" text-capitalized> Inactive </span>';
+                        } else if ((full['status'] == 3) || (full['status'] == 'pending')) {
+                            status =
+                                '<span class="badge bg-label-warning" text-capitalized> Pending </span>';
+                        }                         
+                    }
+                    else if(full['document_status_id']){
+                        if (full['document_status']['name'] == 'Submit') {
+                            status =
+                                '<span class="badge bg-label-success" text-capitalized> Submit </span>';
+                        } else if (full['document_status']['name'] == 'Draft') {
+                            status =
+                                '<span class="badge bg-label-warning" text-capitalized> Draft </span>';
+                        }
                     }
 
                     return (status);
@@ -166,7 +177,7 @@
             $('.datatables tbody').on('click', '.delete-record', function() {
                 var selectedRow = $(this).closest('tr');
                 var rowData = $('.datatables').DataTable().row(selectedRow).data();
-                $('#confirmDelete').attr('action', '{{url("master/product/delete")}}/'+rowData.id);
+                $('#confirmDelete').attr('action', '{{url("inventory/material-request/delete")}}/'+rowData.id);
                 $('#modalCenter').modal('toggle');
             });
 

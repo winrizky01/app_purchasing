@@ -7,13 +7,13 @@
 
                 <div class="card">
                     <h5 class="card-header border-bottom mb-3">{{ $title }}</h5>
-                    <form id="form" action="{{ url('purchasing/material-request/store') }}" method="POST"
+                    <form id="form" action="{{ url('inventory/material-request/store') }}" method="POST"
                         enctype="multipart/form-data">
                         @csrf
                         <div class="card-body row g-3">
                             <div class="row mb-3">
                                 <div class="col">
-                                    <label class="form-label" for="product_category_id">Type Material Request</label>
+                                    <label class="form-label" for="type_material_request">Type Material Request</label>
                                     @php
                                         $readOnly = '';
                                         $value = '';
@@ -24,9 +24,10 @@
                                             } else {
                                                 $value = 'general';
                                             }
+                                            echo "<input type='hidden' name='type_material_request' value='".$value."'/>";
                                         }
                                     @endphp
-                                    <select class="form-select select2" data-allow-clear="true" required
+                                    <select class="form-select select2" id="type_material_request" name="type_material_request" data-allow-clear="true" required
                                         {{ $readOnly }}>
                                         <option value="">Select Value</option>
                                         @php
@@ -42,52 +43,54 @@
                                     </select>
                                 </div>
                                 <div class="col">
-                                    <label class="form-label" for="product_category_id">Date Document</label>
-                                    <input type="text" class="form-control" id="sku" name="sku"
-                                        value="{{ date('d-m-Y') }}" disabled>
+                                    <label class="form-label" for="date">Date Document</label>
+                                    <input type="text" class="form-control" id="date" name="date"
+                                        value="{{ date('d-m-Y') }}" readonly>
                                 </div>
                             </div>
                             <div class="row mb-3">
                                 <div class="col">
-                                    <label class="form-label" for="product_category_id">No. Document</label>
-                                    <input type="text" class="form-control" id="document_number" name="document_number" value="{{ $document_number }}" readonly>
+                                    <label class="form-label" for="department_id">Department</label>
+                                    <select class="form-select select2" id="department_id" name="department_id" data-allow-clear="true" required>
+                                        <option value="">Select Value</option>
+                                    </select>
                                 </div>
                                 <div class="col">
-                                    <label class="form-label" for="product_category_id">Request Date</label>
-                                    <input type="date" class="form-control" id="sku" name="sku">
+                                    <label class="form-label" for="division_id">Divisi</label>
+                                    <select class="form-select select2" id="division_id" name="division_id" data-allow-clear="true" required>
+                                        <option value="">Select Value</option>
+                                    </select>
                                 </div>
                             </div>
                             <div class="row mb-3">
                                 <div class="col">
-                                    <div class="row">
-                                        <div class="col-md-12 mb-3">
-                                            <label class="form-label" for="product_category_id">Department</label>
-                                            <select class="form-select select2" data-allow-clear="true" required>
-                                                <option value="">Select Value</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-12 mb-3">
-                                            <label class="form-label" for="product_category_id">Justification</label>
-                                            <textarea class="form-control" id="description" name="description" rows="1"></textarea>
-                                        </div>
-                                    </div>
+                                    <label class="form-label" for="code">No. Document</label>
+                                    <input type="text" class="form-control" id="code" name="code" value="{{ $document_number }}" readonly>
+                                </div>
+                                <div class="col">
+                                    <label class="form-label" for="request_date">Request Date</label>
+                                    <input type="date" class="form-control" id="request_date" name="request_date">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col">
+                                    <label class="form-label" for="product_category_id">Justification</label>
+                                    <textarea class="form-control" id="description" name="description" rows="1"></textarea>
                                 </div>
                                 <div class="col">
                                     <div class="row mb-3">
-                                        <div class="col-md-12 mb-3">
-                                            <label class="form-label" for="product_category_id">Divisi</label>
-                                            <select class="form-select select2" data-allow-clear="true" required>
+                                        <div class="col">
+                                            <label class="form-label" for="remark_id">Remaks</label>
+                                            <select class="form-select select2" name="remark_id" id="remark_id" data-allow-clear="true" required>
                                                 <option value="">Select Value</option>
                                             </select>
                                         </div>
-                                        <div class="col-md-12 mb-3">
-                                            <label class="form-label" for="remark">Remaks</label>
-                                            <select class="form-select select2" data-allow-clear="true" required>
+                                        <div class="col">
+                                            <label class="form-label" for="document_status_id">Status</label>
+                                            <select class="form-select select2" name="document_status_id" id="document_status_id" data-allow-clear="true" required>
                                                 <option value="">Select Value</option>
-                                                <option value="normal">Normal</option>
-                                                <option value="urgent">Urgent</option>
                                             </select>
-                                        </div>
+                                        </div>                
                                     </div>
                                 </div>
                             </div>
@@ -121,7 +124,7 @@
                             </div>
                         </div>
                         <div class="card-footer border-top py-3">
-                            <a href="{{ url('purchasing/material-request') }}" class="btn btn-secondary btn-sm">Cancel</a>
+                            <a href="{{ url('inventory/material-request') }}" class="btn btn-secondary btn-sm">Cancel</a>
                             <button type="submit" name="submitButton" class="btn btn-primary btn-sm">Submit</button>
                         </div>
                     </form>
@@ -197,23 +200,47 @@
     
         $(document).ready(function() {
             requestSelectAjax({
-                'url' : '{{ url('setting/general/select?type=product_category_id') }}',
+                'url' : '{{ url("master/department/select") }}',
+                'data': [],
+                'optionType' : 'department',
+                'type': 'GET'
+            });
+            requestSelectAjax({
+                'url' : '{{ url("setting/general/select?type=product_category_id") }}',
                 'data': [],
                 'optionType' : 'product_category',
                 'type': 'GET'
             });
-            // requestSelectAjax({
-            //     'url' : '{{ url('setting/general/select?type=unit_id') }}',
-            //     'data': [],
-            //     'optionType' : 'unit',
-            //     'type': 'GET'
-            // });
-            // requestSelectAjax({
-            //     'url' : '{{ url('setting/general/select?type=machine_id') }}',
-            //     'data': [],
-            //     'optionType' : 'machine',
-            //     'type': 'GET'
-            // });
+            requestSelectAjax({
+                'url' : '{{ url("setting/general/select?whereIn=Submit-Draft") }}',
+                'data': [],
+                'optionType' : 'document_status',
+                'type': 'GET'
+            });
+            requestSelectAjax({
+                'url' : '{{ url("setting/general/select?type=remark_id") }}',
+                'data': [],
+                'optionType' : 'remark',
+                'type': 'GET'
+            });
+            
+            $('#department_id').change(function() {
+                requestSelectAjax({
+                    'url' : '{{ url("master/division/select?department_id='+$(this).val()+'") }}',
+                    'data': [],
+                    'optionType' : 'division',
+                    'type': 'GET'
+                });
+            });
+
+            $('#division_id').change(function() {
+                requestAjax({
+                    'url' : '{{ url("master/division?id='+$(this).val()+'") }}',
+                    'data': [],
+                    'optionType' : 'division',
+                    'type': 'GET'
+                });
+            });
 
             $('#showModal').click(function() {
                 // Setup Datatable
@@ -243,31 +270,49 @@
                 var ajaxData = {'product_category_id':$(this).val()};
                 // Setup Datatable
                 initializeDataTable(ajaxUrl, ajaxData, columns, columnDefs, buttons);
-            })
+            });
+
+            $('form').submit(function(e){
+            });
         })
 
         function setDataSelect(optionType, response) {
             var id = "";
             if (optionType == 'product_category') {
                 id = "#modalProductCategory";
-            } else if (optionType == 'product') {
-                id = "#unit_id";
-            } else if (optionType == 'machine') {
-                id = "#machine_id";
+            } else if (optionType == 'department') {
+                id = "#department_id";
+            } else if (optionType == 'division') {
+                id = "#division_id";
+            } else if (optionType == 'document_status') {
+                id = "#document_status_id";
+            } else if (optionType == 'remark') {
+                id = "#remark_id";
             }
-
+            
             $.each(response.results, function(index, data) {
                 $(id).append('<option value="' + data.id + '">' + data.name + '</option>');
             });
         }
 
+        function handleRequestAjax(optionType, response){
+            if(optionType == "division"){
+                var code_document = $('#code').val();
+                var code_division = code_document.split('/');
+                var new_code_document = code_division[0] + '/' + code_division[1] + '/' + response.results[0].code.toUpperCase() + '/' + code_division[3] + '/' + code_division[4];
+                $('#code').val(new_code_document);
+            }
+        }
+
         function handleAddModalProduct(param){
             var tempAccess = param["data"]['id']
             var e = 0;
+            var index = 0;
             $('#listMaterialDetail tbody tr').each(function(){
                 if($(this).attr('id') == tempAccess){
                     e++;
                 }
+                index++;
             });
 
             if(e > 0){
@@ -276,13 +321,13 @@
             }
             else{
                 var html = '<tr id="'+tempAccess+'">'+
-                        '<input type="hidden" name="product_id[]" value="'+tempAccess+'">'+
+                        '<input type="hidden" name="material_request_details['+index+'][product_id]" value="'+tempAccess+'">'+
                         '<td style="text-transform: capitalize">'+param["data"]["product_category"]["name"]+'</td>'+
                         '<td style="text-transform: capitalize">'+param["data"]["name"]+'</td>'+
                         '<td style="text-transform: capitalize">'+param["data"]["description"]+'</td>'+
                         '<td style="text-transform: capitalize">'+param["data"]["product_unit"]["name"]+'</td>'+
-                        '<td style="text-transform: capitalize"><input type="number"class="form-control" name="product_qty[]" value="'+param["qty"]+'"></td>'+
-                        '<td style="text-transform: capitalize"><input type="text" class="form-control" name="product_note[]"/></td>'+
+                        '<td style="text-transform: capitalize"><input type="number"class="form-control" name="material_request_details['+index+'][product_qty]" value="'+param["qty"]+'"></td>'+
+                        '<td style="text-transform: capitalize"><input type="text" class="form-control" name="material_request_details['+index+'][product_note]"/></td>'+
                         '<td><button type="button" class="btn btn-danger btn-sm deleteList"><i class="fa fa-trash"></i></button></td>'+
                     '<tr>';
 
