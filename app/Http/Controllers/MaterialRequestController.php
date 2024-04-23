@@ -94,12 +94,12 @@ class MaterialRequestController extends Controller
                 'status' => true,
                 'message'=> "Product successfuly access",
                 'code'   => 200,
-                'results'=> ["code"=>generateCodeDocument("MR",$request->division_id)]
+                'results'=> ["code"=>generateCodeDocument("MR",auth()->user()->division_id)]
             ], 200);
         }
         else{
             $data["title"] = "Add Material Request";
-            $data["document_number"] = generateCodeDocument("MR",false);
+            $data["document_number"] = generateCodeDocument("MR",auth()->user()->division_id);
             $view = "pages.material_request.create";
             return view($view, $data);
         }
@@ -118,21 +118,44 @@ class MaterialRequestController extends Controller
 
         DB::beginTransaction();
         try {
+            $filephoto  = "";
+            $photo = "";
+            if ($request->hasFile('document_photo')) {
+                $filephoto= $request->file('document_photo');
+                $photo    = str_replace(" ", "-", $filephoto->getClientOriginalName());
+            }
+
+            $filepdf  = "";
+            $pdf = "";
+            if ($request->hasFile('document_pdf')) {
+                $filepdf= $request->file('document_pdf');
+                $pdf    = str_replace(" ", "-", $filepdf->getClientOriginalName());
+            }
+
             $materialRequest = MaterialRequest::create([
-                'type_material_request'     => $request->type_material_request,
+                'type_material_request'     => $request->type_material_request_id,
                 'code'                      => $request->code,
                 'date'                      => date("Y-m-d", strtotime($request->date)),
                 'request_date'              => date("Y-m-d", strtotime($request->request_date)),
-                'department_id'             => $request->department_id,
-                'division_id'               => $request->division_id,
+                'department_id'             => auth()->user()->department_id,
+                'division_id'               => auth()->user()->division_id,
                 'justification'             => $request->justification,
                 'remark_id'                 => $request->remark_id,
-                // "description"               => $request->description,
+                'document_photo'            => $photo !== "" ? 'template/assets/material_request/'.$photo : null,
+                'document_pdf'              => $pdf !== "" ? 'template/assets/material_request/'.$pdf : null,
                 'document_status_id'        => $request->document_status_id,
+                'document_status_id'        => 1,
                 "created_at"                => date("Y-m-d H:i:s"),
                 "created_by"                => auth()->user()->id,
             ]);
             if($materialRequest){
+                if($photo != ""){
+                    $filephoto->move(public_path('template/assets/material_request/'), $photo);
+                }
+                if($pdf != ""){
+                    $filepdf->move(public_path('template/assets/material_request/'), $pdf);
+                }
+
                 if ($request->material_request_details) {
                     foreach ($request->material_request_details as $key => $value) {
                         $product_id = null;
@@ -190,9 +213,14 @@ class MaterialRequestController extends Controller
 
     public function edit(Request $request, $id)
     {
-        $product = Product::find($id);
-        if(!$product){
-            return handleErrorResponse($request, 'Opps, data not found!', 'master/product', 404, null);
+        $check_role = session('role')->name;
+        if(($check_role !== "Superadmin")&&($check_role !== "Tech User")){
+            return handleErrorResponse($request, 'Opps, sorry you dont have access!', 'inventory/material-request', 404, null);
+        }
+
+        $materialRequest = MaterialRequest::with(['material_request_details','material_request_details.product','department','document_status'])->find($id);
+        if(!$materialRequest){
+            return handleErrorResponse($request, 'Opps, data not found!', 'inventory/material-request', 404, null);
         }
 
         if($request->expectsJson())
@@ -201,14 +229,14 @@ class MaterialRequestController extends Controller
                 'status' => true,
                 'message'=> "Data found.",
                 'code'   => 200,
-                'results'=> $product
+                'results'=> $materialRequest
             ], 200);
         }
         else{
-            $data["title"] = "Edit Product";
-            $data["data"]  = $product;
+            $data["title"] = "Edit Material Request";
+            $data["data"]  = $materialRequest;
 
-            $view = "pages.product.edit";
+            $view = "pages.material_request.edit";
             
             return view($view, $data);
         }
@@ -276,6 +304,41 @@ class MaterialRequestController extends Controller
         }
         else{
             Session::put('success','Data successfuly updated.');
+            return redirect()->to('master/product');
+        }
+    }
+
+    public function reject(Request $request, $id)
+    {
+        DB::beginTransaction();
+        $product = Product::find($id);
+        if(!$product){
+            return handleErrorResponse($request, 'Opps, data not found.', 'master/product', 404, null);
+        }
+
+        try {
+            $product->status     = "inactive";
+            $product->deleted_at = date("Y-m-d H:i:s");
+            $product->deleted_by = auth()->user()->id;
+            $product->save();
+            $product->delete();
+        } catch (Exception $e) {
+            DB::rollBack();
+            return handleErrorResponse($request, 'Opps, data failed to delete.', 'master/product', 404, null);
+        }
+
+        DB::commit();
+
+        if($request->expectsJson()){
+            return response()->json([
+                'status' => true,
+                'message'=> "Data successfuly deleted.",
+                'code'   => 200,
+                'results'=> []
+            ], 200);
+        }
+        else {
+            Session::put('success','Data successfuly deleted.');
             return redirect()->to('master/product');
         }
     }

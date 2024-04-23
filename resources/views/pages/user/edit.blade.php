@@ -60,6 +60,18 @@
                             </select>
                         </div>
                         <div class="col-md-6">
+                            <label class="form-label" for="department_id">Department</label>
+                            <select id="department_id" name="department_id" class="select2 form-select" data-allow-clear="true" required >
+                                <option value="">Select</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="division_id">Division</label>
+                            <select id="division_id" name="division_id" class="select2 form-select" data-allow-clear="true" required >
+                                <option value="">Select</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
                             <label class="form-label" for="status">Status</label>
                             <select id="status" name="status" class="form-select select2" data-allow-clear="true" required >
                                 <option value="">Select</option>
@@ -90,6 +102,8 @@
 <script type="text/javascript">
     var existingRoleId = <?php echo json_encode($data->role); ?>;
     var existingUserLocationId = <?php echo json_encode($data->user_location_id); ?>;
+    var existingUserDepartmentId = <?php echo json_encode($data->department_id); ?>;
+    var existingUserDivisionId = <?php echo json_encode($data->division_id); ?>;
 
     $(document).ready(function(){
         requestSelectAjax({
@@ -103,6 +117,21 @@
             'data': [],
             'optionType' : 'user_location',
             'type': 'GET'
+        });
+        requestSelectAjax({
+            'url' : '{{ url("master/department/select") }}',
+            'data': [],
+            'optionType' : 'department',
+            'type': 'GET'
+        });
+
+        $('#department_id').change(function() {
+            requestSelectAjax({
+                'url' : '{{ url("master/division/select?department_id='+$(this).val()+'") }}',
+                'data': [],
+                'optionType' : 'division',
+                'type': 'GET'
+            });
         });
 
 
@@ -127,8 +156,13 @@
         else if(optionType == 'user_location'){
             id = "#user_location_id";
             existingId = existingUserLocationId;
+        } else if (optionType == 'department') {
+            id = "#department_id";
+            existingId = existingUserDepartmentId;
+        } else if (optionType == 'division') {
+            id = "#division_id";
+            existingId = existingUserDivisionId;
         }
-
 
         $.each(response.results, function(index, data) {
             var option = '<option value="' + data.id + '">' + data.name + '</option>';

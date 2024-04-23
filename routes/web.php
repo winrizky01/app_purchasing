@@ -69,6 +69,7 @@
                 Route::get('/select', [App\Http\Controllers\MaterialRequestController::class, 'select']);
                 Route::get('/select', [App\Http\Controllers\MaterialRequestController::class, 'select']);
                 Route::get('/print/{id}', [App\Http\Controllers\MaterialRequestController::class, 'print']);
+                Route::get('/show/{id}', [App\Http\Controllers\MaterialRequestController::class, 'edit']);
 
                 Route::post('/store', [App\Http\Controllers\MaterialRequestController::class, 'store']);
                 Route::post('/update/{id}', [App\Http\Controllers\MaterialRequestController::class, 'update']);

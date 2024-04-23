@@ -18,11 +18,14 @@ function generateCodeDocument($transactionType, $division=false){
     }
 
     if($transactionType == "MR"){
-        $last_document  = MaterialRequest::where("division_id", $division)->where("date","LIKE","%".date("Y-m")."%")->orderBy("id", "DESC")->first();
+        $last_document  = MaterialRequest::where("division_id", $division);
     }
     else if($transactionType == "PR"){
 
     }
+    $last_document = $last_document->where("date","LIKE","%".date("Y-m")."%")
+                    ->orderBy("id", "DESC")
+                    ->first();
 
     $last_code = "000";
     if($last_document){
@@ -57,4 +60,41 @@ function generateCodeDocument($transactionType, $division=false){
     $newDocumentCode = $new_code."/".$transactionType."/".$division_name."/".$month."/".date("Y");
 
     return $newDocumentCode;
+}
+
+function findAllStatusGeneral($param)
+{
+    /**
+     * note :
+     * document_status 
+     * type_id (for employee type)
+     * id
+     * 
+     */
+
+    $query = DB::table("generals")
+                ->select("id","name","extra")
+                ->where("status","active")
+                ->whereNull("deleted_at");
+
+    if(isset($param["id"])){
+        $query->where("id",$param["id"]);
+    }
+
+    if(isset($param["name"])){
+        $query->where("name",$param["name"]);
+    }
+    
+    if(isset($param["type"])){
+        $query->where("type",$param["type"]);
+    }
+
+    return $query->first();
+}
+
+function pageControl($req){
+    $segment = $req;
+    $modul  = "";
+    $feature= "";
+    $access = "";
 }

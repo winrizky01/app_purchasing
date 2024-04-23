@@ -108,6 +108,7 @@
 
     <script type="text/javascript">
         // Setup Datatable
+        var role     = "{{session('role')->name}}";
         var ajaxUrl  = "{{ url('inventory/material-request/dataTables') }}";
         var ajaxData = [];
         var columns  = [{ data: 'code' }, { data: 'request_date' }, {data: 'department.name'}, { data: 'status' }, { data: 'action' }];
@@ -149,13 +150,22 @@
                 searchable: false,
                 orderable: false,
                 render: function(data, type, full, meta) {
-                    return (
-                        '<div class="d-flex align-items-center">' +
-                            '<a href="{{ url("inventory/material-request/edit") }}/' + full.id +
-                            '" class="text-body edit-record"><i class="ti ti-edit ti-sm me-2"></i></a>' +
-                            '<a href="javascript:;" class="text-body delete-record"><i class="ti ti-trash ti-sm mx-2"></i></a>' +
-                        '</div>'
-                    );
+                    if(role == "End User"){
+                        return (
+                            '<div class="d-flex align-items-center">' +
+                                '<a href="javascript:;" class="text-body"><i class="ti ti-eye ti-sm mx-2"></i></a>' +
+                            '</div>'
+                        );
+                    }
+                    else{
+                        return (
+                            '<div class="d-flex align-items-center">' +
+                                '<a href="{{ url("inventory/material-request/edit") }}/' + full.id +
+                                '" class="text-body edit-record"><i class="ti ti-edit ti-sm me-2"></i></a>' +
+                                '<a href="javascript:;" class="text-body delete-record"><i class="ti ti-trash ti-sm mx-2"></i></a>' +
+                            '</div>'
+                        );
+                    }
                 }
             }
         ];
