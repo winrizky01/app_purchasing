@@ -53,7 +53,7 @@ class UserController extends Controller
 
             $offset = ($page - 1) * $limit;
             
-            $query = User::with(['role','user_location'])->where($where)->orderBy("users.id", "ASC");
+            $query = User::with(['role','user_location','department','division'])->where($where)->orderBy("users.id", "ASC");
             if ($limit > 0) {
                 $query = $query->offset($offset)->limit($limit)->paginate($limit);
             } 
@@ -86,7 +86,7 @@ class UserController extends Controller
 
     public function edit(Request $request, $id)
     {
-        $user = User::with(['role','user_location'])->find($id);
+        $user = User::with(['role','user_location','department','division'])->find($id);
         if(!$user){
             return handleErrorResponse($request, 'Opps, data not found!', 'master/user', 404, null);
         }
@@ -137,7 +137,9 @@ class UserController extends Controller
                 "email"     => $request->email,
                 "password"  => bcrypt($request->password),
                 "role"      => (int)$request->role_id,
-                "user_location_id" => $request->user_location_id,
+                "user_location_id"  => $request->user_location_id,
+                "department_id"     => $request->department_id,
+                "division_id"       => $request->division_id,
                 "status"    => $request->status,
                 "created_at"=> date("Y-m-d H:i:s")
             ]);
@@ -186,6 +188,8 @@ class UserController extends Controller
             $user->email    = $request->email;
             $user->role     = $request->role_id;
             $user->user_location_id = $request->user_location_id;
+            $user->department_id    = $request->department_id;
+            $user->division_id      = $request->division_id;
             $user->status   = $request->status;
             $user->updated_at = date("Y-m-d H:i:s");
 
@@ -261,7 +265,7 @@ class UserController extends Controller
             $where[] = ['users.status', $request->status];
         }
         
-        $data = User::with(['role','user_location'])->where($where)->get();
+        $data = User::with(['role','user_location','department','division'])->where($where)->get();
         return datatables()->of($data)->toJson();
     }
 }

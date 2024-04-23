@@ -24,6 +24,8 @@ class User extends Authenticatable
         'password',
         'role',
         'user_location_id',
+        'department_id',
+        'division_id',
         'status',
         'created_by',
         'updated_by',
@@ -53,12 +55,21 @@ class User extends Authenticatable
     public function role()
     {
         return $this->hasOne(Role::class, 'id','role');
-
     }
 
     public function user_location()
     {
         return $this->hasOne(General::class, 'id','user_location_id');
-
     }
+
+    public function department()
+    {
+        return $this->hasOne(Department::class, 'id','department_id');
+    }
+
+    public function division()
+    {
+        return $this->hasOne(Division::class, 'id','division_id');
+    }
+
 }

@@ -62,6 +62,18 @@
                                 </select>
                             </div>
                             <div class="col-md-6">
+                                <label class="form-label" for="department_id">Department</label>
+                                <select id="department_id" name="department_id" class="select2 form-select" data-allow-clear="true" required >
+                                    <option value="">Select</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="division_id">Division</label>
+                                <select id="division_id" name="division_id" class="select2 form-select" data-allow-clear="true" required >
+                                    <option value="">Select</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
                                 <label class="form-label" for="status">Status</label>
                                 <select id="status" name="status" class="form-select select2" data-allow-clear="true" required >
                                     <option value="">Select</option>
@@ -95,6 +107,21 @@
                 'optionType' : 'user_location',
                 'type': 'GET'
             });
+            requestSelectAjax({
+                'url' : '{{ url("master/department/select") }}',
+                'data': [],
+                'optionType' : 'department',
+                'type': 'GET'
+            });
+
+            $('#department_id').change(function() {
+                requestSelectAjax({
+                    'url' : '{{ url("master/division/select?department_id='+$(this).val()+'") }}',
+                    'data': [],
+                    'optionType' : 'division',
+                    'type': 'GET'
+                });
+            });
 
             $('form').submit(function(event){
                 // Memeriksa apakah kedua kolom memiliki nilai yang sama
@@ -111,9 +138,12 @@
             var id = "";
             if(optionType == 'role'){
                 id = "#role_id";
-            }
-            else if(optionType == 'user_location'){
+            } else if(optionType == 'user_location'){
                 id = "#user_location_id";
+            } else if (optionType == 'department') {
+                id = "#department_id";
+            } else if (optionType == 'division') {
+                id = "#division_id";
             }
 
             $.each(response.results, function(index, data) {

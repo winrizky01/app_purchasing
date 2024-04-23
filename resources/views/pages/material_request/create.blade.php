@@ -13,33 +13,9 @@
                         <div class="card-body row g-3">
                             <div class="row mb-3">
                                 <div class="col">
-                                    <label class="form-label" for="type_material_request">Type Material Request</label>
-                                    @php
-                                        $readOnly = '';
-                                        $value = '';
-                                        if (auth()->user()->user_location_id != null) {
-                                            $readOnly = 'disabled';
-                                            if (auth()->user()->user_location->name == 'Site') {
-                                                $value = 'normal';
-                                            } else {
-                                                $value = 'general';
-                                            }
-                                            echo "<input type='hidden' name='type_material_request' value='".$value."'/>";
-                                        }
-                                    @endphp
-                                    <select class="form-select select2" id="type_material_request" name="type_material_request" data-allow-clear="true" required
-                                        {{ $readOnly }}>
+                                    <label class="form-label" for="material_request_type_id">Type Material Request</label>
+                                    <select class="form-select select2" id="material_request_type_id" name="material_request_type_id" data-allow-clear="true" required>
                                         <option value="">Select Value</option>
-                                        @php
-                                            $v = ['normal', 'general'];
-                                        @endphp
-                                        @for ($i = 0; $i < count($v); $i++)
-                                            @if ($v[$i] == $value)
-                                                <option value="{{ $v[$i] }}" selected>{{ ucfirst($v[$i]) }}</option>
-                                            @else
-                                                <option value="{{ $v[$i] }}">{{ ucfirst($v[$i]) }}</option>
-                                            @endif
-                                        @endFor
                                     </select>
                                 </div>
                                 <div class="col">
@@ -48,7 +24,7 @@
                                         value="{{ date('d-m-Y') }}" readonly>
                                 </div>
                             </div>
-                            <div class="row mb-3">
+                            {{-- <div class="row mb-3">
                                 <div class="col">
                                     <label class="form-label" for="department_id">Department</label>
                                     <select class="form-select select2" id="department_id" name="department_id" data-allow-clear="true" required>
@@ -61,7 +37,7 @@
                                         <option value="">Select Value</option>
                                     </select>
                                 </div>
-                            </div>
+                            </div> --}}
                             <div class="row mb-3">
                                 <div class="col">
                                     <label class="form-label" for="code">No. Document</label>
@@ -70,6 +46,16 @@
                                 <div class="col">
                                     <label class="form-label" for="request_date">Request Date</label>
                                     <input type="date" class="form-control" id="request_date" name="request_date">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col">
+                                    <label class="form-label" for="document_photo">Photo</label>
+                                    <input type="file" class="form-control" id="document_photo" name="document_photo">
+                                </div>
+                                <div class="col">
+                                    <label class="form-label" for="document_pdf">Document PDF</label>
+                                    <input type="file" class="form-control" id="document_pdf" name="document_pdf">
                                 </div>
                             </div>
                             <div class="row mb-3">
@@ -200,6 +186,12 @@
     
         $(document).ready(function() {
             requestSelectAjax({
+                'url' : '{{ url("setting/general/select?type=material_request_type_id") }}',
+                'data': [],
+                'optionType' : 'material_request_type',
+                'type': 'GET'
+            });
+            requestSelectAjax({
                 'url' : '{{ url("master/department/select") }}',
                 'data': [],
                 'optionType' : 'department',
@@ -235,9 +227,9 @@
 
             $('#division_id').change(function() {
                 requestAjax({
-                    'url' : '{{ url("master/division?id='+$(this).val()+'") }}',
+                    'url' : '{{ url("inventory/material-request/create?division_id=") }}' + $(this).val(),
                     'data': [],
-                    'optionType' : 'division',
+                    'optionType' : 'generate_code_document',
                     'type': 'GET'
                 });
             });
@@ -288,6 +280,8 @@
                 id = "#document_status_id";
             } else if (optionType == 'remark') {
                 id = "#remark_id";
+            } else if (optionType == 'material_request_type'){
+                id = "#material_request_type_id";
             }
             
             $.each(response.results, function(index, data) {
@@ -296,11 +290,24 @@
         }
 
         function handleRequestAjax(optionType, response){
-            if(optionType == "division"){
-                var code_document = $('#code').val();
-                var code_division = code_document.split('/');
-                var new_code_document = code_division[0] + '/' + code_division[1] + '/' + response.results[0].code.toUpperCase() + '/' + code_division[3] + '/' + code_division[4];
-                $('#code').val(new_code_document);
+            if(optionType == "generate_code_document"){
+                console.log(response.results.code);
+                // var code_document = $('#code').val();
+                // var code_division = code_document.split('/');
+                // var new_code_document = code_division[0] + '/' + code_division[1] + '/' + response.results[0].code.toUpperCase() + '/' + code_division[3] + '/' + code_division[4];
+                $('#code').val(response.results.code);
+
+                // $.ajax({
+                //     url     : '{{ url("inventory/material-request/create?division_id='+response.results[0].id+'") }}',
+                //     method  : 'GET',
+                //     data    : [],
+                //     success : function(response) {
+                //         console.log(response)
+                //     },
+                //     error: function(xhr, status, error) {
+                //         console.error("Request failed: " + error);
+                //     }
+                // });
             }
         }
 
