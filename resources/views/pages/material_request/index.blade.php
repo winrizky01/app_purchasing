@@ -153,7 +153,7 @@
                     if(role == "End User"){
                         return (
                             '<div class="d-flex align-items-center">' +
-                                '<a href="javascript:;" class="text-body"><i class="ti ti-eye ti-sm mx-2"></i></a>' +
+                                '<a href="{{ url("inventory/material-request/show") }}/' + full.id + '" class="text-body"><i class="ti ti-eye ti-sm mx-2"></i></a>' +
                             '</div>'
                         );
                     }

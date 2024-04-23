@@ -7,134 +7,131 @@
 
                 <div class="card">
                     <h5 class="card-header border-bottom mb-3">{{ $title }}</h5>
-                    <form id="form" action="{{ url('master/product/update').'/'.$data->id }}" method="POST" enctype="multipart/form-data">
+                    <form id="form" method="POST" enctype="multipart/form-data">
+                        <input type="hidden" name="isChange" value="false"/>
+                        <input type="hidden" name="reason" id="reason"/>
                         @csrf
                         <div class="card-body row g-3">
-                            <!-- first column -->
-                            <div class="col-12 col-lg-3 mb-3">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <div class="user-avatar-section">
-                                            <div class="d-flex align-items-center flex-column">
-                                                <label>Pict. Product</label>
-                                                @if ($data->photo != null)
-                                                <img class="img-fluid rounded mb-3 mt-3" id="tempImage" src="{{ url($data->photo) }}" height="250" width="250">
-                                                @else
-                                                <img class="img-fluid rounded mb-3 mt-3" id="tempImage" src="{{ url('template/assets/img/noimage.png') }}" height="250" width="250">
-                                                @endif
-                                                <input type="file" id="media" name="media" class="d-none"/>
-                                                <div class="user-info text-center">
-                                                    <button class="btn btn-primary btn-sm" type="button" id="changeImage">Change</button>
-                                                </div>
-                                            </div>
+                            <div class="row mb-3">
+                                <div class="col">
+                                    <label class="form-label" for="material_request_type_id">Type Material Request</label>
+                                    <select class="form-select select2" id="material_request_type_id" name="material_request_type_id" data-allow-clear="true" required>
+                                        <option value="">Select Value</option>
+                                    </select>
+                                </div>
+                                <div class="col">
+                                    <label class="form-label" for="date">Date Document</label>
+                                    <input type="text" class="form-control" id="date" name="date"
+                                        value="{{ date('d-m-Y') }}" readonly>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col">
+                                    <label class="form-label" for="code">No. Document</label>
+                                    <input type="text" class="form-control" id="code" name="code" value="{{ $data->code }}" readonly>
+                                </div>
+                                <div class="col">
+                                    <label class="form-label" for="request_date">Request Date</label>
+                                    <input type="date" class="form-control" id="request_date" name="request_date" value="{{ $data->request_date }}">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col">
+                                    <label class="form-label" for="document_photo">Photo</label>
+                                    <div class="input-group">
+                                        <input type="file" class="form-control" id="document_photo" name="document_photo">
+                                        @if($data->document_photo != null)
+                                            <a href="{{asset($data->document_photo)}}" class="btn btn-primary btn-sm" target="_blank">Show Photo</a>
+                                        @endif
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <label class="form-label" for="document_pdf">Document PDF</label>
+                                    <div class="input-group">
+                                        <input type="file" class="form-control" id="document_pdf" name="document_pdf">
+                                        @if($data->document_pdf != null)
+                                            <a href="{{asset($data->document_pdf)}}" class="btn btn-sm btn-primary" target="_blank">Show Pdf</a>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col">
+                                    <label class="form-label" for="product_category_id">Justification</label>
+                                    <textarea class="form-control" id="description" name="description" rows="1">{{ $data->justification }}</textarea>
+                                </div>
+                                <div class="col">
+                                    <div class="row mb-3">
+                                        <div class="col">
+                                            <label class="form-label" for="remark_id">Remaks</label>
+                                            <select class="form-select select2" name="remark_id" id="remark_id" data-allow-clear="true" required>
+                                                <option value="">Select Value</option>
+                                            </select>
                                         </div>
+                                        <div class="col">
+                                            <label class="form-label" for="document_status_id">Status</label>
+                                            <select class="form-select select2" name="document_status_id" id="document_status_id" data-allow-clear="true" required>
+                                                <option value="">Select Value</option>
+                                            </select>
+                                        </div>                
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Second column -->
-                            <div class="col-12 col-lg-9 mb-3">
-                                <div class="mb-3">
-                                    <label class="form-label" for="product_category_id">Product Category</label>
-                                    <select id="product_category_id" name="product_category_id" class="form-select select2" data-allow-clear="true" required>
-                                        <option value="">Select Value</option>
-                                    </select>
+                            <div class="col-md-12">
+                                <div class="divider">
+                                    <div class="divider-text">Material Request Detail</div>
                                 </div>
-                                <div class="row mb-3">
-                                    <div class="col">
-                                        <label class="form-label" for="sku">SKU</label>
-                                        <input type="text" class="form-control" id="sku" placeholder="SKU" name="sku" value="{{ $data->sku }}" required>
-                                    </div>
-                                    <div class="col">
-                                        <label class="form-label" for="code">Code</label>
-                                        <input type="text" class="form-control" id="code" name="code" data-allow-clear="true" value="{{ $data->code }}" required>
-                                    </div>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label" for="name">Name</label>
-                                    <input type="text" class="form-control" id="name" name="name" data-allow-clear="true" value="{{ $data->name }}" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="description" class="form-label">Description</label>
-                                    <textarea class="form-control" id="description" name="description" rows="3">{{ $data->description }}</textarea>
-                                </div>
-                                <div class="row mb-3">
-                                    <div class="col">
-                                        <label class="form-label" for="unit_id">Unit</label>
-                                        <select id="unit_id" name="unit_id" class="form-select select2" data-allow-clear="true" required>
-                                            <option value="">Select Value</option>
-                                        </select>
-                                    </div>
-
-                                    <div class="col">
-                                        <label class="form-label" for="is_inventory">In Stock</label>
-                                        <select id="is_inventory" name="is_inventory" class="form-select select2" data-allow-clear="true" required>
-                                            <option value="">Select Value</option>
-                                            @php
-                                                $is_inventory  = ['yes','no']; 
-                                            @endphp
-                                            @for($i=0; $i<count($is_inventory); $i++)
-                                                @if($is_inventory[$i] == $data->is_inventory)
-                                                <option value="{{ $is_inventory[$i] }}" selected>{{ ucfirst($is_inventory[$i]) }}</option>
-                                                @else
-                                                <option value="{{ $is_inventory[$i] }}">{{ ucfirst($is_inventory[$i]) }}</option>
-                                                @endif
-                                            @endFor
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="">
-                                    <div class="divider">
-                                        <div class="divider-text">Additional</div>
-                                    </div>
-                                </div>
-                                <div class="row mb-3">
-                                    <div class="col">
-                                        <label class="form-label" for="dimension">Dimensions</label>
-                                        <input type="text" class="form-control" id="dimension" name="dimension"  value="{{ $data->dimension }}">
-                                    </div>
-                                    <div class="col">
-                                        <label class="form-label" for="part_number">Part Number</label>
-                                        <input type="text" class="form-control" id="part_number" name="part_number" value="{{ $data->part_number }}">
-                                    </div>
-                                    <div class="col">
-                                        <label class="form-label" for="machine_id">For Machine</label>
-                                        <select id="machine_id" name="machine_id" class="form-select select2" data-allow-clear="true">
-                                            <option value="">Select Value</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label" for="spesification">Spesification</label>
-                                    <textarea class="form-control" id="spesification" name="spesification" rows="3">{{ $data->spesification }}</textarea>
-                                </div>
-                                <div class="">
-                                    <div class="divider">
-                                        <div class="divider-text">Additional</div>
-                                    </div>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label" for="status">Status</label>
-                                    <select id="status" name="status" class="form-select select2" data-allow-clear="true" required>
-                                        <option value="">Select Value</option>
-                                        <option value="">Select</option>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-sm btn-primary" type="button" id="showModal">Add Product</button>
+                            </div>
+                            <div class="col-md-12">
+                                <table class="table" id="listMaterialDetail">
+                                    <thead>
+                                        <th>Cat.</th>
+                                        <th>Product</th>
+                                        <th>Function</th>
+                                        <th>Unit</th>
+                                        <th style="width: 12%">Qty</th>
+                                        <th>Note</th>
+                                        <th>Action</th>
+                                    </thead>
+                                    <tbody>
                                         @php
-                                            $status  = ['active','inactive']; 
+                                            $index = 0;
                                         @endphp
-                                        @for($i=0; $i<count($status); $i++)
-                                            @if($status[$i] == $data->status)
-                                            <option value="{{ $status[$i] }}" selected>{{ ucfirst($status[$i]) }}</option>
-                                            @else
-                                            <option value="{{ $status[$i] }}">{{ ucfirst($status[$i]) }}</option>
-                                            @endif
-                                        @endFor
-                                    </select>
+                                        @foreach ($data->material_request_details as $item)
+                                            <tr id="{{ $item->product_id }}">
+                                                <input type="hidden" name="material_request_details[{{$index}}][product_id]" value="{{ $item->product_id }}">
+                                                <td>{{ $item->product->product_category->name }}</td>
+                                                <td>{{ $item->product->name }}</td>
+                                                <td>{{ $item->product->function }}</td>
+                                                <td>{{ $item->product->product_unit["name"] }}</td>
+                                                <td style="text-transform: capitalize"><input type="number"class="form-control" name="material_request_details[{{$index}}][product_qty]" value="{{ $item->qty }}"></td>
+                                                <td style="text-transform: capitalize"><input type="text" class="form-control" name="material_request_details[{{$index}}][product_note]" value="{{ $item->notes }}"/></td>
+                                                <td><button type="button" class="btn btn-danger btn-sm deleteList"><i class="fa fa-trash"></i></button></td>                        
+                                            </tr>
+                                            @php
+                                                $index++;
+                                            @endphp
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="divider">
+                                    <div class="divider-text">Material Request Detail</div>
                                 </div>
                             </div>
                         </div>
                         <div class="card-footer border-top py-3">
-                            <a href="{{ url('master/product') }}" class="btn btn-secondary btn-sm">Cancel</a>
-                            <button type="submit" name="submitButton" class="btn btn-primary btn-sm">Submit</button>
+                            <a href="{{ url('inventory/material-request') }}" class="btn btn-secondary btn-sm">Cancel</a>
+                            <button type="submit" name="submitButton" id="buttonModalApproved" data-value="Approved" class="btn btn-primary btn-sm buttonModalConfirm">Submit</button>
+                            @if(session('role')->name == "Plan Manager")
+                            <button type="button" id="buttonModalRevision" data-value="Revision" class="btn btn-warning btn-sm buttonModalConfirm">Revision</button>
+                            @endif
+                            <button type="button" id="buttonModalReject" data-value="Reject" class="btn btn-danger btn-sm buttonModalConfirm">Reject</button>
                         </div>
                     </form>
                 </div>
@@ -142,12 +139,151 @@
         </div>
     </div>
 
-    <script type="text/javascript">
-        var existingProductCategoryId = <?php echo json_encode($data->product_category_id); ?>;
-        var existingUnitId            = <?php echo json_encode($data->unit_id); ?>;
-        var existingMachineId         = <?php echo json_encode($data->machine_id); ?>;
+    <!-- Modal Product -->
+    <div class="modal fade" id="modalShowProduct" tabindex="-1" aria-modal="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-2">
+                        <div class="col-md-3">
+                            <label for="" class="form-label">Product Category</label>
+                            <select class="form-select select2" data-allow-clear="true" id="modalProductCategory" placeholder="All Products" required>
+                                <option value="">All Product</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card-datatable table-responsive">
+                            <table class="datatables table border-top" id="modalProduct" style="font-size: 10pt">
+                                <thead>
+                                    <tr>
+                                        <th>SKU</th>
+                                        <th>Name</th>
+                                        <th>Unit</th>
+                                        <th style="width: 20%">Qty</th>
+                                        <th style="width: 20%">Actions</th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>                
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
+    <!-- Modal Confirm Update / revisi / reject -->
+    <div class="modal fade" id="modalCenter" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalCenterTitle">Confirm Update Data</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">                        
+                    <div class="row">
+                        <div class="col-md-12 mb-3" id="modalCenterMessage"></div>
+                        <div class="col-md-12">
+                            <input type="hidden" class="form-control" name="modalNote" id="modalNote">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">
+                        Close
+                    </button>
+                    <button type="button" class="btn btn-primary buttonModalConfirm" id="submit" data-value="Submit">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        var role   = "{{session('role')->name}}";
+        var mode   = "{{ $mode }}";
+        var dataId = "{{ $data->id }}";
+        var formCheck  = true;
+        var formMode   = "";
+        var existingMeterialRequestType = "<?php echo json_encode($data->material_request_type); ?>";
+        var existingRemarkId            = "<?php echo json_encode($data->remark_id); ?>";
+
+        // Setup Datatable
+        var ajaxUrl  = "{{ url('master/product/dataTables') }}";
+        var ajaxData = [];
+        var columns  = [{ data: 'sku' }, { data: 'name' }, {data: 'product_unit.name'}, { data: 'qty' }, { data: 'action' }];
+        var columnDefs  =  [
+            {
+                // Qty
+                targets: -2,
+                render: function(data, type, full, meta) {
+                    var status = '<input type="number" min="1" class="form-control form-control-sm" id="modalQty" name="modalQty"/>';
+
+                    return (status);
+                }
+            },
+            {
+                // Actions
+                targets: -1,
+                title: 'Actions',
+                searchable: false,
+                orderable: false,
+                render: function(data, type, full, meta) {
+                    return (
+                        '<button class="btn btn-sm btn-primary btnAddProductModal" type="button"><i style="font-size:8pt" class="ti ti-plus"></i></button>'
+                    );
+                }
+            }
+        ];
+        var buttons =  []
+    
         $(document).ready(function() {
+            if(mode == "show"){
+                $("form :input").prop("disabled", true);
+            }
+
+            // initial change
+            var isChanged = false;
+            var initialValues = {};
+            $('form :input').not('select[name="remark"], select[name="status"]').each(function() {
+                initialValues[$(this).attr('name')] = $(this).val();
+            });
+            $('form :input').not('select[name="remark"], select[name="status"]').on('change keyup', function() {
+                var fieldName = $(this).attr('name');
+                var newValue = $(this).val();
+                var oldValue = initialValues[fieldName];
+
+                if (newValue !== oldValue) {
+                    isChanged = true;
+                }
+            });
+            // initial change
+
+            // request select option
+            if(role == "Tech Support"){
+                requestSelectAjax({
+                    'url' : '{{ url("setting/general/select?whereIn=Approved-Reject") }}',
+                    'data': [],
+                    'optionType' : 'document_status',
+                    'type': 'GET'
+                });
+            }
+            else if(role == "Plant Manager"){
+                requestSelectAjax({
+                    'url' : '{{ url("setting/general/select?whereIn=Approved-Reject-Revision") }}',
+                    'data': [],
+                    'optionType' : 'document_status',
+                    'type': 'GET'
+                });
+            }
+            requestSelectAjax({
+                'url' : '{{ url("setting/general/select?type=material_request_type_id") }}',
+                'data': [],
+                'optionType' : 'material_request_type',
+                'type': 'GET'
+            });
             requestSelectAjax({
                 'url' : '{{ url("setting/general/select?type=product_category_id") }}',
                 'data': [],
@@ -155,50 +291,170 @@
                 'type': 'GET'
             });
             requestSelectAjax({
-                'url' : '{{ url("setting/general/select?type=unit_id") }}',
+                'url' : '{{ url("setting/general/select?type=remark_id") }}',
                 'data': [],
-                'optionType' : 'unit',
+                'optionType' : 'remark',
                 'type': 'GET'
             });
-            requestSelectAjax({
-                'url' : '{{ url("setting/general/select?type=machine_id") }}',
-                'data': [],
-                'optionType' : 'machine',
-                'type': 'GET'
+            // request select option
+
+            $('#showModal').click(function() {
+                // Setup Datatable
+                initializeDataTable(ajaxUrl, ajaxData, columns, columnDefs, buttons);
+
+                $('#modalShowProduct').modal('toggle');
             });
 
-            $('#changeImage').click(function(){
-                $('#media').click();
+            $('body').on('click', '.btnAddProductModal', function(){
+                var selectedRow = $(this).closest('tr');
+                var modalQty    = selectedRow.find('#modalQty').val();
+                var rowData     = $('#modalProduct').DataTable().row(selectedRow).data();
+
+                if(modalQty == ""){
+                    toasMassage({status:false, message:'Opps, please fill qty product!'});
+                    return false;
+                }
+
+                handleAddModalProduct({'data':rowData, 'qty': modalQty});
             });
-            $('#media').change(function() {
-                filePreview(this);
+            $('body').on('click', '.deleteList', function(){
+                $(this).closest('tr').remove();
             });
 
+            $('body').on('change', '#modalProductCategory', function(){
+                // Setup Datatable
+                var ajaxData = {'product_category_id':$(this).val()};
+                // Setup Datatable
+                initializeDataTable(ajaxUrl, ajaxData, columns, columnDefs, buttons);
+            });
+
+            // handle button modal confirm
+            $('.buttonModalConfirm').click(function(){
+                var mode = $(this).attr('data-value');
+                if(mode == "Submit"){
+                    formCheck = false;
+                    if(formMode != "Approved"){
+                        if(($('#modalNote').val() === "")||($('#modalNote').val() === null)||($('#modalNote').val() == undefined)){
+                            toasMassage({status:false, message:'Opps, please fill reason!'});
+                            return false;
+                        }
+                    }
+                    $('#reason').val($('#modalNote').val());
+                    $('form').submit();
+                }
+                else{
+                    if(mode == 'Reject'){
+                        var modalCenterTitle = "Confirm Reject Data";
+                        var modalMessage = "Please, fill the reason!";
+                        $('#modalNote').attr("type","text");
+                        $('form').attr('action','{{ url("inventory/material-request/reject")}}'+'/'+dataId);
+                    }
+                    else if(mode == 'Revision'){
+                        var modalCenterTitle = "Confirm Revision Data";
+                        var modalMessage = "Please, fill the reason!";
+                        $('#modalNote').attr("type","text");
+                        $('form').attr('action','{{ url("inventory/material-request/revision")}}'+'/'+dataId);
+                    }
+                    else if(mode == "Approved"){
+                        var modalCenterTitle = "Confirm Approve Data";
+                        $('#modalNote').attr("type","hidden");
+                        if(isChanged == true){
+                            var modalMessage = "Are you sure to approve and revisied this data?";
+                        }
+                        else{
+                            var modalMessage = "Are you sure to approve this data?";
+                        }
+                        $('form').attr('action','{{ url("inventory/material-request/update")}}'+'/'+dataId);
+                    }
+
+                    formMode = mode;
+                    $('#modalCenterTitle').text(modalCenterTitle);
+                    $('#modalCenterMessage').text(modalMessage);
+                    $('#modalCenter').modal('toggle');
+                }
+            });
+            // handle button modal confirm
+
+            $('form').submit(function(e){
+                if(formCheck == true){
+                    var documentStatusSelected = $('#document_status_id').children('option:selected').text();
+                    if(documentStatusSelected == "Reject"){
+                        $('#buttonModalReject').click();
+                    }
+                    else if(documentStatusSelected == "Approved"){
+                        $('#buttonModalApproved').click();
+                    }
+                    else if(documentStatusSelected == "Revision"){
+                        $('#buttonModalReject').click();
+                    }
+                    e.preventDefault();
+                }
+            });
         })
 
-        function setDataSelect(optionType, response){
+        function setDataSelect(optionType, response) {
             var id = "";
             var existingId = "";
-            if(optionType == 'product_category'){
-                id = "#product_category_id";
-                existingId = existingProductCategoryId;
+            if (optionType == 'product_category') {
+                id = "#modalProductCategory";
+            } else if (optionType == 'document_status') {
+                id = "#document_status_id";
+            } else if (optionType == 'remark') {
+                id = "#remark_id";
+                existingId = existingRemarkId;
+            } else if (optionType == 'material_request_type'){
+                id = "#material_request_type_id";
+                existingId = existingMeterialRequestType;
             }
-            else if(optionType == 'unit'){
-                id = "#unit_id";
-                existingId = existingUnitId;
-            }
-            else if(optionType == 'machine'){
-                id = "#machine_id";
-                existingId = existingMachineId;
-            }
-
+            
             $.each(response.results, function(index, data) {
                 var option = '<option value="' + data.id + '">' + data.name + '</option>';
-                if (existingId && existingId == data.id) {
-                    option = '<option value="' + data.id + '" selected>' + data.name + '</option>';
+                if(existingId.length > 1){
+                    for(var i=0; i < existingId.length; i++){
+                        if (existingId[i].id && existingId[i].id == data.id) {
+                            option = '<option value="' + data.id + '" selected>' + data.name + '</option>';
+                        }
+                    }
+                }
+                else{
+                    if (existingId && existingId == data.id) {
+                        option = '<option value="' + data.id + '" selected>' + data.name + '</option>';
+                    }
                 }
                 $(id).append(option);
             });
+        }
+
+        function handleAddModalProduct(param){
+            var tempAccess = param["data"]['id']
+            var e = 0;
+            var index = 0;
+            $('#listMaterialDetail tbody tr').each(function(){
+                if($(this).attr('id') == tempAccess){
+                    e++;
+                }
+                index++;
+            });
+
+            if(e > 0){
+                toasMassage({status:false, message:'Opps, product already exist!'});
+                return false;
+            }
+            else{
+                var html = '<tr id="'+tempAccess+'">'+
+                        '<input type="hidden" name="material_request_details['+index+'][product_id]" value="'+tempAccess+'">'+
+                        '<td style="text-transform: capitalize">'+param["data"]["product_category"]["name"]+'</td>'+
+                        '<td style="text-transform: capitalize">'+param["data"]["name"]+'</td>'+
+                        '<td style="text-transform: capitalize">'+param["data"]["description"]+'</td>'+
+                        '<td style="text-transform: capitalize">'+param["data"]["product_unit"]["name"]+'</td>'+
+                        '<td style="text-transform: capitalize"><input type="number"class="form-control" name="material_request_details['+index+'][product_qty]" value="'+param["qty"]+'"></td>'+
+                        '<td style="text-transform: capitalize"><input type="text" class="form-control" name="material_request_details['+index+'][product_note]"/></td>'+
+                        '<td><button type="button" class="btn btn-danger btn-sm deleteList"><i class="fa fa-trash"></i></button></td>'+
+                    '<tr>';
+
+                $("#listMaterialDetail tbody").append(html);
+            }
+
         }
     </script>
 @endsection

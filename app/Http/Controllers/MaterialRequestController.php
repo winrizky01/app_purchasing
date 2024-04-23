@@ -213,12 +213,66 @@ class MaterialRequestController extends Controller
 
     public function edit(Request $request, $id)
     {
-        $check_role = session('role')->name;
-        if(($check_role !== "Superadmin")&&($check_role !== "Tech User")){
-            return handleErrorResponse($request, 'Opps, sorry you dont have access!', 'inventory/material-request', 404, null);
+        // page control
+        if(!pageControl($request)){
+            return redirect('/');
         }
 
+        $check_role = session('role')->name;
+
         $materialRequest = MaterialRequest::with(['material_request_details','material_request_details.product','department','document_status'])->find($id);
+        if(!$materialRequest){
+            return handleErrorResponse($request, 'Opps, data not found!', 'inventory/material-request', 404, null);
+        }
+
+        $getDocumentStatus = findAllStatusGeneral(["id"=>$materialRequest->document_status_id]);
+        $getDocumentStatus = $getDocumentStatus->name;
+        if($getDocumentStatus == "Draft"){
+            if($check_role !== "End User"){
+                return handleErrorResponse($request, 'Opps, sorry you dont have access!', 'inventory/material-request', 404, null);
+            }    
+        }
+        else if(($getDocumentStatus == "Submit")||($getDocumentStatus == "Revisie")){
+            if($check_role !== "Tech Support"){
+                return handleErrorResponse($request, 'Opps, sorry you dont have access!', 'inventory/material-request', 404, null);
+            }    
+        }
+        else if($getDocumentStatus == "Riview"){            
+            if($check_role !== "Plan Manager"){
+                return handleErrorResponse($request, 'Opps, sorry you dont have access!', 'inventory/material-request', 404, null);
+            }    
+        }
+
+        if($request->expectsJson())
+        {
+            return response()->json([
+                'status' => true,
+                'message'=> "Data found.",
+                'code'   => 200,
+                'results'=> $materialRequest
+            ], 200);
+        }
+        else{
+            $data["title"] = "Edit Material Request";
+            $data["data"]  = $materialRequest;
+            $data["mode"]  = "edit";
+
+            $view = "pages.material_request.edit";
+            
+            return view($view, $data);
+        }
+    }
+
+    public function show(Request $request, $id)
+    {
+        $materialRequest = MaterialRequest::with([
+            'material_request_details',
+            'material_request_details.product',
+            'material_request_details.product.product_category',
+            'material_request_details.product.product_unit' ,
+            'department',
+            'document_status'])
+            ->find($id);
         if(!$materialRequest){
             return handleErrorResponse($request, 'Opps, data not found!', 'inventory/material-request', 404, null);
         }
@@ -235,7 +289,8 @@ class MaterialRequestController extends Controller
         else{
             $data["title"] = "Edit Material Request";
             $data["data"]  = $materialRequest;
-
+            $data["mode"]  = "show";
+            
             $view = "pages.material_request.edit";
             
             return view($view, $data);
@@ -244,6 +299,8 @@ class MaterialRequestController extends Controller
 
     public function update(Request $request, $id)
     {
+        var_dump($request->all());die();
+        
         $validator = Validator::make($request->all(),[
             'product_category_id' => 'required',
             'name'      => 'required',
@@ -310,36 +367,61 @@ class MaterialRequestController extends Controller
 
     public function reject(Request $request, $id)
     {
-        DB::beginTransaction();
-        $product = Product::find($id);
-        if(!$product){
-            return handleErrorResponse($request, 'Opps, data not found.', 'master/product', 404, null);
+        $validator = Validator::make($request->all(),[
+            'reason' => 'required',
+        ]);
+        if($validator->fails()){
+            return handleErrorResponse($request, 'The following fields are required !', 'inventory/material-request', 404, null);
         }
+
+        DB::beginTransaction();
+        $materialRequest = MaterialRequest::find($id);
+        if(!$materialRequest){
+            return handleErrorResponse($request, 'Opps, data not found!', 'inventory/material-request', 404, null);
+        }
+
+        $getDocumentStatus = findAllStatusGeneral(["type"=>"document_status_id", "name"=>"Reject"]);
+        $getDocumentStatus = $getDocumentStatus->id;
 
         try {
-            $product->status     = "inactive";
-            $product->deleted_at = date("Y-m-d H:i:s");
-            $product->deleted_by = auth()->user()->id;
-            $product->save();
-            $product->delete();
+            $materialRequest->document_status_id = $getDocumentStatus;
+            $materialRequest->updated_at = date("Y-m-d H:i:s");
+            $materialRequest->updated_by = auth()->user()->id;
+            $materialRequest->save();
         } catch (Exception $e) {
             DB::rollBack();
-            return handleErrorResponse($request, 'Opps, data failed to delete.', 'master/product', 404, null);
+            return handleErrorResponse($request, 'Opps, data failed to reject.', 'inventory/material-request', 404, null);
         }
 
-        DB::commit();
+        var_dump($request->all());die();
+    }
 
-        if($request->expectsJson()){
-            return response()->json([
-                'status' => true,
-                'message'=> "Data successfuly deleted.",
-                'code'   => 200,
-                'results'=> []
-            ], 200);
+    public function revision(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(),[
+            'reason' => 'required',
+        ]);
+        if($validator->fails()){
+            return handleErrorResponse($request, 'The following fields are required !', 'inventory/material-request', 404, null);
         }
-        else {
-            Session::put('success','Data successfuly deleted.');
-            return redirect()->to('master/product');
+
+        DB::beginTransaction();
+        $materialRequest = MaterialRequest::find($id);
+        if(!$materialRequest){
+            return handleErrorResponse($request, 'Opps, data not found!', 'inventory/material-request', 404, null);
+        }
+
+        $getDocumentStatus = findAllStatusGeneral(["type"=>"document_status_id", "name"=>"Revision"]);
+        $getDocumentStatus = $getDocumentStatus->id;
+
+        try {
+            $materialRequest->document_status_id = $getDocumentStatus;
+            $materialRequest->updated_at = date("Y-m-d H:i:s");
+            $materialRequest->updated_by = auth()->user()->id;
+            $materialRequest->save();
+        } catch (Exception $e) {
+            DB::rollBack();
+            return handleErrorResponse($request, 'Opps, data failed to reject.', 'inventory/material-request', 404, null);
         }
     }
 

@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
 use App\Models\MaterialRequest;
 use App\Models\Division;
@@ -92,9 +93,22 @@ function findAllStatusGeneral($param)
     return $query->first();
 }
 
-function pageControl($req){
-    $segment = $req;
-    $modul  = "";
-    $feature= "";
-    $access = "";
+function pageControl($request){
+    $role   = session('role')->name;
+    $modul  = DB::table("menu_parents")->where("seo",$request->segments()[0])->get()[0]->id;
+    $feature= DB::table("menu_childrens")->where("seo",$request->segments()[1])->get()[0]->id;
+
+    $check_user_role = DB::table("roles")
+                        ->join("role_details","role_details.role_id","=","roles.id")
+                        ->where("roles.name", $role)
+                        ->where("role_details.menu_parent_id", $modul)
+                        ->where("role_details.menu_children_id",$feature)
+                        ->get();
+    if(count($check_user_role) > 0){
+        return true;
+    }else{
+        return false;
+    }
 }
+
+function accessControl(){}

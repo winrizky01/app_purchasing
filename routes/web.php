@@ -35,7 +35,6 @@
                 Route::get('/edit/{id}', [App\Http\Controllers\PurchaseRequestController::class, 'edit']);
                 Route::get('/dataTables', [App\Http\Controllers\PurchaseRequestController::class, 'dataTables']);
                 Route::get('/select', [App\Http\Controllers\PurchaseRequestController::class, 'select']);
-                Route::get('/select', [App\Http\Controllers\PurchaseRequestController::class, 'select']);
                 Route::get('/print/{id}', [App\Http\Controllers\PurchaseRequestController::class, 'print']);
 
                 Route::post('/store', [App\Http\Controllers\PurchaseRequestController::class, 'store']);
@@ -64,15 +63,16 @@
             Route::prefix('material-request')->group(function(){
                 Route::get('/', [App\Http\Controllers\MaterialRequestController::class, 'index']);
                 Route::get('/create', [App\Http\Controllers\MaterialRequestController::class, 'create']);
+                Route::get('/show/{id}', [App\Http\Controllers\MaterialRequestController::class, 'show']);
                 Route::get('/edit/{id}', [App\Http\Controllers\MaterialRequestController::class, 'edit']);
                 Route::get('/dataTables', [App\Http\Controllers\MaterialRequestController::class, 'dataTables']);
                 Route::get('/select', [App\Http\Controllers\MaterialRequestController::class, 'select']);
-                Route::get('/select', [App\Http\Controllers\MaterialRequestController::class, 'select']);
                 Route::get('/print/{id}', [App\Http\Controllers\MaterialRequestController::class, 'print']);
-                Route::get('/show/{id}', [App\Http\Controllers\MaterialRequestController::class, 'edit']);
 
                 Route::post('/store', [App\Http\Controllers\MaterialRequestController::class, 'store']);
                 Route::post('/update/{id}', [App\Http\Controllers\MaterialRequestController::class, 'update']);
+                Route::post('/revision/{id}', [App\Http\Controllers\MaterialRequestController::class, 'revision']);
+                Route::post('/reject/{id}', [App\Http\Controllers\MaterialRequestController::class, 'reject']);
 
                 Route::delete('/delete/{id}', [App\Http\Controllers\MaterialRequestController::class, 'destroy']);
             });

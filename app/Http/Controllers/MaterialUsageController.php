@@ -41,6 +41,10 @@ class MaterialUsageController extends Controller
 
     public function index(Request $request)
     {
+        if(!pageControl($request)){
+            return redirect('/');
+        }
+
         if ($request->expectsJson()) {
             $page   = 1;
             $limit  = 0;
