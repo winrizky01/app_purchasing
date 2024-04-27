@@ -27,8 +27,22 @@ class MaterialRequest extends Model
         return $this->hasOne(Division::class, 'id', 'division_id');
     }
 
+    public function remark()
+    {
+        return $this->hasOne(General::class, 'id', 'remark_id');
+    }
+
     public function document_status()
     {
         return $this->hasOne(General::class, 'id', 'document_status_id');
     }
+
+    public function createdBy(){
+        return $this->hasOne(User::class, 'id', 'created_by');
+    }
+
+    public function last_update(){
+        return $this->hasOne(User::class, 'id', 'updated_by');
+    }
+
 }

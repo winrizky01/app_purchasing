@@ -19,7 +19,7 @@ class Approval extends Model
 
     public function status()
     {
-        return $this->hasOne(General::class, 'status_id','id');
+        return $this->hasOne(General::class, 'document_status','id');
     }
 
     public function user()

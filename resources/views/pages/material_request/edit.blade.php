@@ -20,19 +20,13 @@
                                     </select>
                                 </div>
                                 <div class="col">
-                                    <label class="form-label" for="date">Date Document</label>
-                                    <input type="text" class="form-control" id="date" name="date"
-                                        value="{{ date('d-m-Y') }}" readonly>
-                                </div>
-                            </div>
-                            <div class="row mb-3">
-                                <div class="col">
                                     <label class="form-label" for="code">No. Document</label>
                                     <input type="text" class="form-control" id="code" name="code" value="{{ $data->code }}" readonly>
                                 </div>
                                 <div class="col">
                                     <label class="form-label" for="request_date">Request Date</label>
-                                    <input type="date" class="form-control" id="request_date" name="request_date" value="{{ $data->request_date }}">
+                                    <input type="text" class="form-control" id="request_date" name="request_date"
+                                        value="{{ date('d-m-Y', strtotime($data->request_date)) }}" readonly>
                                 </div>
                             </div>
                             <div class="row mb-3">
@@ -57,11 +51,11 @@
                             </div>
                             <div class="row mb-3">
                                 <div class="col">
-                                    <label class="form-label" for="product_category_id">Justification</label>
-                                    <textarea class="form-control" id="description" name="description" rows="1">{{ $data->justification }}</textarea>
+                                    <label class="form-label" for="justification">Justification</label>
+                                    <textarea class="form-control" id="justification" name="justification" rows="1">{{ $data->justification }}</textarea>
                                 </div>
                                 <div class="col">
-                                    <div class="row mb-3">
+                                    <div class="row">
                                         <div class="col">
                                             <label class="form-label" for="remark_id">Remaks</label>
                                             <select class="form-select select2" name="remark_id" id="remark_id" data-allow-clear="true" required>
@@ -75,6 +69,12 @@
                                             </select>
                                         </div>                
                                     </div>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <label class="form-label">Revision / Rejected Reason</label>
+                                    <textarea class="form-control" readonly>{{ $data->last_reason}}</textarea>
                                 </div>
                             </div>
 
@@ -106,7 +106,7 @@
                                                 <input type="hidden" name="material_request_details[{{$index}}][product_id]" value="{{ $item->product_id }}">
                                                 <td>{{ $item->product->product_category->name }}</td>
                                                 <td>{{ $item->product->name }}</td>
-                                                <td>{{ $item->product->function }}</td>
+                                                <td>{{ $item->product->description }}</td>
                                                 <td>{{ $item->product->product_unit["name"] }}</td>
                                                 <td style="text-transform: capitalize"><input type="number"class="form-control" name="material_request_details[{{$index}}][product_qty]" value="{{ $item->qty }}"></td>
                                                 <td style="text-transform: capitalize"><input type="text" class="form-control" name="material_request_details[{{$index}}][product_note]" value="{{ $item->notes }}"/></td>
@@ -124,14 +124,23 @@
                                     <div class="divider-text">Material Request Detail</div>
                                 </div>
                             </div>
+                            <div class="col-md-12 text-muted" style="font-size: 8pt">
+                                <span>Created By : {{ $data->createdBy->name }} - {{ date("d-m-Y H:i:s", strtotime($data->created_at)) }}</span> <br/>
+                                <span>Last Update By : {{ $data->last_update != null ? $data->last_update->name : "" }} - {{  $data->last_update != null ? date("d-m-Y H:i:s", strtotime($data->updated_at)) : "" }}</span>
+                            </div>
                         </div>
                         <div class="card-footer border-top py-3">
                             <a href="{{ url('inventory/material-request') }}" class="btn btn-secondary btn-sm">Cancel</a>
-                            <button type="submit" name="submitButton" id="buttonModalApproved" data-value="Approved" class="btn btn-primary btn-sm buttonModalConfirm">Submit</button>
-                            @if(session('role')->name == "Plan Manager")
-                            <button type="button" id="buttonModalRevision" data-value="Revision" class="btn btn-warning btn-sm buttonModalConfirm">Revision</button>
-                            @endif
+                            @if(session('role')->name == "Tech Support")
                             <button type="button" id="buttonModalReject" data-value="Reject" class="btn btn-danger btn-sm buttonModalConfirm">Reject</button>
+                            <button type="submit" name="submitButton" id="buttonModalApproved" data-value="Approved" class="btn btn-primary btn-sm buttonModalConfirm">Submit</button>
+                            @elseif(session('role')->name == "Plant Manager")
+                            <button type="submit" name="submitButton" id="buttonModalApproved" data-value="Approved" class="btn btn-primary btn-sm buttonModalConfirm">Submit</button>
+                            <button type="button" id="buttonModalRevision" data-value="Revision" class="btn btn-warning btn-sm buttonModalConfirm">Revision</button>
+                            <button type="button" id="buttonModalReject" data-value="Reject" class="btn btn-danger btn-sm buttonModalConfirm">Reject</button>
+                            @elseif(session('role')->name == "End User")
+                            <button type="submit" name="submitButton" id="buttonModalApproved" data-value="Update" class="btn btn-primary btn-sm buttonModalConfirm">Submit</button>
+                            @endif
                         </div>
                     </form>
                 </div>
@@ -207,9 +216,11 @@
         var dataId = "{{ $data->id }}";
         var formCheck  = true;
         var formMode   = "";
-        var existingMeterialRequestType = "<?php echo json_encode($data->material_request_type); ?>";
-        var existingRemarkId            = "<?php echo json_encode($data->remark_id); ?>";
-
+        var existingMeterialRequestType = <?php echo json_encode($data->type_material_request); ?>;
+        var existingRemarkId            = <?php echo json_encode($data->remark_id); ?>;
+        var documentSatus = <?php echo json_encode($data->document_status->name);?>;
+        var existingDocumentStatus = <?php echo json_encode($data->document_status_id);?>;
+        
         // Setup Datatable
         var ajaxUrl  = "{{ url('master/product/dataTables') }}";
         var ajaxData = [];
@@ -240,17 +251,17 @@
         var buttons =  []
     
         $(document).ready(function() {
-            if(mode == "show"){
+            if((mode == "show")){
                 $("form :input").prop("disabled", true);
             }
 
             // initial change
             var isChanged = false;
             var initialValues = {};
-            $('form :input').not('select[name="remark"], select[name="status"]').each(function() {
+            $('form :input').not('select[name="remark_id"], select[name="document_status_id"]').each(function() {
                 initialValues[$(this).attr('name')] = $(this).val();
             });
-            $('form :input').not('select[name="remark"], select[name="status"]').on('change keyup', function() {
+            $('form :input').not('select[name="remark_id"], select[name="document_status_id"]').on('change keyup', function() {
                 var fieldName = $(this).attr('name');
                 var newValue = $(this).val();
                 var oldValue = initialValues[fieldName];
@@ -262,22 +273,25 @@
             // initial change
 
             // request select option
+            var whereInStatusDocRole = "";
             if(role == "Tech Support"){
-                requestSelectAjax({
-                    'url' : '{{ url("setting/general/select?whereIn=Approved-Reject") }}',
-                    'data': [],
-                    'optionType' : 'document_status',
-                    'type': 'GET'
-                });
+                whereInStatusDocRole = "Approved-Reject";
             }
             else if(role == "Plant Manager"){
-                requestSelectAjax({
-                    'url' : '{{ url("setting/general/select?whereIn=Approved-Reject-Revision") }}',
-                    'data': [],
-                    'optionType' : 'document_status',
-                    'type': 'GET'
-                });
+                whereInStatusDocRole = "Approved-Reject-Revision";
             }
+            else if(role == "End User"){
+                if(documentSatus == "Draft"){
+                    $("form :input").prop("disabled", false);
+                    whereInStatusDocRole = "Submit-Draft";
+                }
+            }
+            requestSelectAjax({
+                'url' : '{{ url("setting/general/select?whereIn=") }}' + whereInStatusDocRole,
+                'data': [],
+                'optionType' : 'document_status',
+                'type': 'GET'
+            });
             requestSelectAjax({
                 'url' : '{{ url("setting/general/select?type=material_request_type_id") }}',
                 'data': [],
@@ -333,7 +347,7 @@
                 var mode = $(this).attr('data-value');
                 if(mode == "Submit"){
                     formCheck = false;
-                    if(formMode != "Approved"){
+                    if((formMode == "Reject")||(formMode == "Revision")){
                         if(($('#modalNote').val() === "")||($('#modalNote').val() === null)||($('#modalNote').val() == undefined)){
                             toasMassage({status:false, message:'Opps, please fill reason!'});
                             return false;
@@ -356,6 +370,15 @@
                         $('form').attr('action','{{ url("inventory/material-request/revision")}}'+'/'+dataId);
                     }
                     else if(mode == "Approved"){
+                        if($('#remark_id').val() == ""){
+                            toasMassage({status:false, message:'Opps, please fill Remark!'});
+                            return false;
+                        }
+                        if($('#document_status_id').val() == ""){
+                            toasMassage({status:false, message:'Opps, please fill Status!'});
+                            return false;
+                        }
+
                         var modalCenterTitle = "Confirm Approve Data";
                         $('#modalNote').attr("type","hidden");
                         if(isChanged == true){
@@ -364,6 +387,12 @@
                         else{
                             var modalMessage = "Are you sure to approve this data?";
                         }
+                        $('form').attr('action','{{ url("inventory/material-request/update")}}'+'/'+dataId);
+                    }
+                    else if(mode == "Update"){
+                        var modalCenterTitle = "Confirm Update Data";
+                        var modalMessage = "Are you sure to update this data?";
+                        $('#modalNote').attr("type","hidden");
                         $('form').attr('action','{{ url("inventory/material-request/update")}}'+'/'+dataId);
                     }
 
@@ -399,6 +428,7 @@
                 id = "#modalProductCategory";
             } else if (optionType == 'document_status') {
                 id = "#document_status_id";
+                existingId = existingDocumentStatus;
             } else if (optionType == 'remark') {
                 id = "#remark_id";
                 existingId = existingRemarkId;

@@ -14,13 +14,14 @@ return new class extends Migration
         Schema::create('approvals', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('type_transaction_id')->nullable();
-            $table->unsignedBigInteger('status_id')->nullable();
+            $table->unsignedBigInteger('transaction_id')->nullable();
+            $table->unsignedBigInteger('document_status')->nullable();
             $table->foreignId('user_id')->nullable()->constrained()->cascadeOnDelete();
             $table->date('date')->nullable();
             $table->timestamps();
 
             $table->foreign('type_transaction_id')->references('id')->on('generals')->cascadeOnDelete();
-            $table->foreign('status_id')->references('id')->on('generals')->cascadeOnDelete();
+            $table->foreign('document_status')->references('id')->on('generals')->cascadeOnDelete();
         });
     }
 

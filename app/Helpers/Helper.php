@@ -2,10 +2,12 @@
 
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
 use App\Models\MaterialRequest;
 use App\Models\Division;
+use App\Models\Approval;
 
 function generateCodeDocument($transactionType, $division=false){
     if($division == false){
@@ -24,7 +26,7 @@ function generateCodeDocument($transactionType, $division=false){
     else if($transactionType == "PR"){
 
     }
-    $last_document = $last_document->where("date","LIKE","%".date("Y-m")."%")
+    $last_document = $last_document->where("request_date","LIKE","%".date("Y-m")."%")
                     ->orderBy("id", "DESC")
                     ->first();
 
@@ -61,6 +63,22 @@ function generateCodeDocument($transactionType, $division=false){
     $newDocumentCode = $new_code."/".$transactionType."/".$division_name."/".$month."/".date("Y");
 
     return $newDocumentCode;
+}
+
+function approvalTransaction($type_transaction_id, $transaction_id, $document_status_id){
+    try{
+        $approval = Approval::create([
+            "type_transaction_id"   => $type_transaction_id,
+            "transaction_id"        => $transaction_id,
+            "document_status"       => $document_status_id,
+            "user_id"               => auth()->user()->id,
+            "date"                  => date("Y-m-d"),
+            "created_at"            => date("Y-m-d H:i:s")
+        ]);
+    }catch(Exception $e){
+        return false;
+    }
+    return true;
 }
 
 function findAllStatusGeneral($param)

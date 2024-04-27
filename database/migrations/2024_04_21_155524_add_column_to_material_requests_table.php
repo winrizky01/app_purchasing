@@ -15,6 +15,7 @@ return new class extends Migration
             $table->unsignedBigInteger('document_status_id')->nullable();
             $table->text('document_photo')->nullable();
             $table->text('document_pdf')->nullable();
+            $table->text('last_reason')->nullable();
 
             $table->foreign('document_status_id')->references('id')->on('generals')->cascadeOnDelete();
         });
@@ -27,7 +28,8 @@ return new class extends Migration
     {
         Schema::table('material_requests', function (Blueprint $table) {
             $table->dropForeign(['document_status_id']);
-
+            
+            $table->dropColumn(['last_reason']);
             $table->dropColumn(['document_status_id']);
             $table->dropColumn(['document_photo']);
             $table->dropColumn(['document_pdf']);

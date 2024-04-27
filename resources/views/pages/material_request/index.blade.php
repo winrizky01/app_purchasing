@@ -32,15 +32,17 @@
             <div class="card-body">
                 <div class="row pb-2 gap-3 gap-md-0">
                     <div class="col-md-4">
-                        <label for="filterName">Name</label>
-                        <input type="text" class="form-control" name="filterName" id="filterName" placeholder="Enter Name">
+                        <label for="filterDate">Date Document</label>
+                        <input type="text" class="form-control flatpickr-input active" placeholder="YYYY-MM-DD to YYYY-MM-DD" id="flatpickr-range">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="filterCode">No. Document</label>
+                        <input type="text" class="form-control" name="filterCode" id="filterCode" placeholder="Enter No. Document">
                     </div>
                     <div class="col-md-4">
                         <label for="filterstatus">Status</label>
                         <select class="select2 form-control" name="filterstatus" id="filterstatus">
                             <option value="">Select Status</option>
-                            <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>
                         </select>
                     </div>
                 </div>
@@ -65,8 +67,8 @@
                 <table class="datatables table border-top">
                     <thead>
                         <tr>
-                            <th>No. Document</th>
                             <th>Request Date</th>
+                            <th>No. Document</th>
                             <th>Department</th>
                             <th>Status</th>
                             <th>Actions</th>
@@ -111,35 +113,44 @@
         var role     = "{{session('role')->name}}";
         var ajaxUrl  = "{{ url('inventory/material-request/dataTables') }}";
         var ajaxData = [];
-        var columns  = [{ data: 'code' }, { data: 'request_date' }, {data: 'department.name'}, { data: 'status' }, { data: 'action' }];
+        var columns  = [{ data: 'request_date' }, { data: 'code' }, {data: 'department.name'}, { data: 'status' }, { data: 'action' }];
         var columnDefs  =  [
+            {
+                // Convert date
+                targets: 0,
+                render: function(data, type, full, meta) {
+                    var parts = data.split('-');
+                    var formattedDay = ('0' + parts[0]).slice(-2);
+                    var formattedMonth = ('0' + parts[1]).slice(-2);
+                    var formattedYear = parts[2];
+                    var formattedDate = formattedDay + '-' + formattedMonth + '-' + formattedYear;
+                    return formattedDate;
+                }
+            },
             {
                 // User Status
                 targets: -2,
                 render: function(data, type, full, meta) {
-                    var status = '';
-                    if(full['status']){
-                        if ((full['status'] == 1) || (full['status'] == 'active')) {
-                            status =
-                                '<span class="badge bg-label-success" text-capitalized> Active </span>';
-                        } else if ((full['status'] == 2) || (full['status'] == 'inactive')) {
-                            status =
-                                '<span class="badge bg-label-secondary" text-capitalized> Inactive </span>';
-                        } else if ((full['status'] == 3) || (full['status'] == 'pending')) {
-                            status =
-                                '<span class="badge bg-label-warning" text-capitalized> Pending </span>';
-                        }                         
-                    }
-                    else if(full['document_status_id']){
-                        if (full['document_status']['name'] == 'Submit') {
-                            status =
-                                '<span class="badge bg-label-success" text-capitalized> Submit </span>';
-                        } else if (full['document_status']['name'] == 'Draft') {
-                            status =
-                                '<span class="badge bg-label-warning" text-capitalized> Draft </span>';
+                    var msg = '';
+                    var cls = '';
+                    if(full['document_status_id']){
+                        msg = full['document_status']['name'];
+                        if (
+                            (full['document_status']['name'] == 'Waiting Approval Tech Support')||
+                            (full['document_status']['name'] == 'Waiting Approval Plant Manager'||
+                            (full['document_status']['name'] == 'Draft')
+                        )) {
+                            cls = 'bg-label-warning';
+                        }
+                        else if (full['document_status']['name'] == 'Approved Plant Manager') {
+                            cls = 'bg-label-success';
+                        }
+                        else if ((full['document_status']['name'] == 'Rejected Tech Support')||(full['document_status']['name'] == 'Rejected Plant Manager')) {
+                            cls = 'bg-label-danger';
                         }
                     }
 
+                    var status = '<span class="badge '+ cls +'" text-capitalized> '+ msg +' </span>';
                     return (status);
                 }
             },
@@ -150,22 +161,33 @@
                 searchable: false,
                 orderable: false,
                 render: function(data, type, full, meta) {
+                    var action = '<div class="d-flex align-items-center">';
                     if(role == "End User"){
-                        return (
-                            '<div class="d-flex align-items-center">' +
-                                '<a href="{{ url("inventory/material-request/show") }}/' + full.id + '" class="text-body"><i class="ti ti-eye ti-sm mx-2"></i></a>' +
-                            '</div>'
-                        );
+                        action += '<a href="{{ url("inventory/material-request/show") }}/' + full.id + '" class="text-body"><i class="ti ti-eye ti-sm mx-2"></i></a>';
+                    }
+                    else if(role == "Tech Support"){
+                        if(full.document_status.name == "Waiting Approval Tech Support"){
+                            action += '<a href="{{ url("inventory/material-request/edit") }}/' + full.id +'" class="text-body edit-record"><i class="ti ti-edit ti-sm me-2"></i></a>';
+                        }
+                        else{
+                            action += '<a href="{{ url("inventory/material-request/show") }}/' + full.id + '" class="text-body"><i class="ti ti-eye ti-sm mx-2"></i></a>';
+                        }
+                    }
+                    else if(role == "Plan Manager"){
+                        if(full.document_status.name == "Waiting Approval Plan Manager"){
+                            action += '<a href="{{ url("inventory/material-request/edit") }}/' + full.id + '" class="text-body edit-record"><i class="ti ti-edit ti-sm me-2"></i></a>';
+                        }
+                        else{
+                            action += '<a href="{{ url("inventory/material-request/show") }}/' + full.id + '" class="text-body"><i class="ti ti-eye ti-sm mx-2"></i></a>';
+                        }
                     }
                     else{
-                        return (
-                            '<div class="d-flex align-items-center">' +
-                                '<a href="{{ url("inventory/material-request/edit") }}/' + full.id +
-                                '" class="text-body edit-record"><i class="ti ti-edit ti-sm me-2"></i></a>' +
-                                '<a href="javascript:;" class="text-body delete-record"><i class="ti ti-trash ti-sm mx-2"></i></a>' +
-                            '</div>'
-                        );
+                        action += '<a href="{{ url("inventory/material-request/edit") }}/' + full.id + '" class="text-body edit-record"><i class="ti ti-edit ti-sm me-2"></i></a>';
                     }
+
+                    action += '<button type="button" class="btn btn-icon waves-effect download-record"><i class="ti ti-printer ti-sm me-2"></i></button> </div>';
+
+                    return action;
                 }
             }
         ];
@@ -181,6 +203,13 @@
         // Setup Datatable
 
         $(document).ready(function() {
+            requestSelectAjax({
+                'url' : '{{ url("setting/general/select?whereIn=Waiting Approval Tech Support-Waiting Approval Plant Manager-Approved Plant Manager-Revisied Plant Manager-Rejected Tech Support-Rejected Plant Manager-Approved Tech Support") }}',
+                'data': [],
+                'optionType' : 'document_status',
+                'type': 'GET'
+            });
+
             initializeDataTable(ajaxUrl, ajaxData, columns, columnDefs, buttons);
 
             // Delete Record
@@ -190,7 +219,38 @@
                 $('#confirmDelete').attr('action', '{{url("inventory/material-request/delete")}}/'+rowData.id);
                 $('#modalCenter').modal('toggle');
             });
+            $('.datatables tbody').on('click', '.download-record', function(){
+                var selectedRow = $(this).closest('tr');
+                var rowData = $('.datatables').DataTable().row(selectedRow).data();
+                rowData = rowData.id
+                $.ajax({
+                    url: '{{ url("inventory/material-request/print") }}/' + rowData,
+                    type: 'GET',
+                    xhrFields: {
+                        responseType: 'blob' // Mengindikasikan bahwa respons adalah binary data (blob)
+                    },
+                    success: function(response) {
+                        // Membuat objek URL untuk file blob
+                        var url = window.URL.createObjectURL(new Blob([response]));
 
+                        // Membuat elemen anchor untuk menautkan ke objek URL
+                        var a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'document.pdf'; // Nama file yang akan diunduh
+                        document.body.appendChild(a);
+
+                        // Mengklik elemen anchor secara otomatis untuk memulai unduhan
+                        a.click();
+
+                        // Menghapus elemen anchor setelah selesai
+                        window.URL.revokeObjectURL(url);
+                        document.body.removeChild(a);
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Request failed: " + error);
+                    }
+                });
+            });
             $('#handleReset').click(function() {
                 $('#filterName').val('');
                 $('#filterstatus').val('').trigger('change');
@@ -198,24 +258,46 @@
                 initializeDataTable(ajaxUrl, ajaxData, columns, columnDefs, buttons);
             });
             $('#handleFilter').click(function(){
-                var name = "";
-                var status = "";
-                if($('#filterName').val() != ""){
-                    name = $('#filterName').val();
+                var date    = "";
+                var code    = "";
+                var status  = "";
+                if($('#flatpickr-range').val() != ""){
+                    date = $('#flatpickr-range').val();
+                }
+                if($('#filterCode').val() != ""){
+                    code = $('#filterCode').val();
                 }
                 if($('#filterstatus').val() != ""){
                     status = $('#filterstatus').val();
                 }
 
-                if((name == "")&&(status == "")){
+                if((date == "")&&(code == "")&&(status == "")){
                     toasMassage({status:false, message:'Opps, please fill out some form!'});
                     return false;
                 }
 
-                ajaxData = {'name':name, 'status': status};
+                ajaxData = {'date':date, 'code':code, 'status': status};
                 initializeDataTable(ajaxUrl, ajaxData, columns, columnDefs, buttons);
             });
-
         });
+
+        function setDataSelect(optionType, response) {
+            var id = "";
+            if (optionType == 'document_status') {
+                id = "#filterstatus";
+            }
+            
+            $.each(response.results, function(index, data) {
+                $(id).append('<option value="' + data.id + '">' + data.name + '</option>');
+            });
+        }
+
+        function handleRequestAjax(option, data){
+            if(option == "pdf"){
+                console.log(data);
+                window.open(data.url, '_blank');
+            }
+        }
+
     </script>
 @endsection

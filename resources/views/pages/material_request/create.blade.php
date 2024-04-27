@@ -19,33 +19,13 @@
                                     </select>
                                 </div>
                                 <div class="col">
-                                    <label class="form-label" for="date">Date Document</label>
-                                    <input type="text" class="form-control" id="date" name="date"
-                                        value="{{ date('d-m-Y') }}" readonly>
-                                </div>
-                            </div>
-                            {{-- <div class="row mb-3">
-                                <div class="col">
-                                    <label class="form-label" for="department_id">Department</label>
-                                    <select class="form-select select2" id="department_id" name="department_id" data-allow-clear="true" required>
-                                        <option value="">Select Value</option>
-                                    </select>
-                                </div>
-                                <div class="col">
-                                    <label class="form-label" for="division_id">Divisi</label>
-                                    <select class="form-select select2" id="division_id" name="division_id" data-allow-clear="true" required>
-                                        <option value="">Select Value</option>
-                                    </select>
-                                </div>
-                            </div> --}}
-                            <div class="row mb-3">
-                                <div class="col">
                                     <label class="form-label" for="code">No. Document</label>
                                     <input type="text" class="form-control" id="code" name="code" value="{{ $document_number }}" readonly>
                                 </div>
                                 <div class="col">
                                     <label class="form-label" for="request_date">Request Date</label>
-                                    <input type="date" class="form-control" id="request_date" name="request_date">
+                                    <input type="text" class="form-control" id="request_date" name="request_date"
+                                        value="{{ date('d-m-Y') }}" readonly>
                                 </div>
                             </div>
                             <div class="row mb-3">
@@ -61,7 +41,7 @@
                             <div class="row mb-3">
                                 <div class="col">
                                     <label class="form-label" for="product_category_id">Justification</label>
-                                    <textarea class="form-control" id="description" name="description" rows="1"></textarea>
+                                    <textarea class="form-control" id="justification" name="justification" rows="1" required></textarea>
                                 </div>
                                 <div class="col">
                                     <div class="row mb-3">
@@ -192,19 +172,13 @@
                 'type': 'GET'
             });
             requestSelectAjax({
-                'url' : '{{ url("master/department/select") }}',
-                'data': [],
-                'optionType' : 'department',
-                'type': 'GET'
-            });
-            requestSelectAjax({
                 'url' : '{{ url("setting/general/select?type=product_category_id") }}',
                 'data': [],
                 'optionType' : 'product_category',
                 'type': 'GET'
             });
             requestSelectAjax({
-                'url' : '{{ url("setting/general/select?whereIn=Submit-Draft") }}',
+                'url' : '{{ url("setting/general/select?whereIn=Submit") }}',
                 'data': [],
                 'optionType' : 'document_status',
                 'type': 'GET'
@@ -216,24 +190,6 @@
                 'type': 'GET'
             });
             
-            $('#department_id').change(function() {
-                requestSelectAjax({
-                    'url' : '{{ url("master/division/select?department_id='+$(this).val()+'") }}',
-                    'data': [],
-                    'optionType' : 'division',
-                    'type': 'GET'
-                });
-            });
-
-            $('#division_id').change(function() {
-                requestAjax({
-                    'url' : '{{ url("inventory/material-request/create?division_id=") }}' + $(this).val(),
-                    'data': [],
-                    'optionType' : 'generate_code_document',
-                    'type': 'GET'
-                });
-            });
-
             $('#showModal').click(function() {
                 // Setup Datatable
                 initializeDataTable(ajaxUrl, ajaxData, columns, columnDefs, buttons);
@@ -272,10 +228,6 @@
             var id = "";
             if (optionType == 'product_category') {
                 id = "#modalProductCategory";
-            } else if (optionType == 'department') {
-                id = "#department_id";
-            } else if (optionType == 'division') {
-                id = "#division_id";
             } else if (optionType == 'document_status') {
                 id = "#document_status_id";
             } else if (optionType == 'remark') {
@@ -287,28 +239,6 @@
             $.each(response.results, function(index, data) {
                 $(id).append('<option value="' + data.id + '">' + data.name + '</option>');
             });
-        }
-
-        function handleRequestAjax(optionType, response){
-            if(optionType == "generate_code_document"){
-                console.log(response.results.code);
-                // var code_document = $('#code').val();
-                // var code_division = code_document.split('/');
-                // var new_code_document = code_division[0] + '/' + code_division[1] + '/' + response.results[0].code.toUpperCase() + '/' + code_division[3] + '/' + code_division[4];
-                $('#code').val(response.results.code);
-
-                // $.ajax({
-                //     url     : '{{ url("inventory/material-request/create?division_id='+response.results[0].id+'") }}',
-                //     method  : 'GET',
-                //     data    : [],
-                //     success : function(response) {
-                //         console.log(response)
-                //     },
-                //     error: function(xhr, status, error) {
-                //         console.error("Request failed: " + error);
-                //     }
-                // });
-            }
         }
 
         function handleAddModalProduct(param){
