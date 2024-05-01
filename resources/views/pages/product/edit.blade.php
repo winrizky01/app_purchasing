@@ -200,7 +200,7 @@
 
             $.each(response.results, function(index, data) {
                 var option = '<option value="' + data.id + '">' + data.name + '</option>';
-                if(existingId.length > 1){
+                if (Array.isArray(existingId)) {
                     for(var i=0; i < existingId.length; i++){
                         if (existingId[i].id && existingId[i].id == data.id) {
                             option = '<option value="' + data.id + '" selected>' + data.name + '</option>';

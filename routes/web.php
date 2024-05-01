@@ -68,6 +68,7 @@
                 Route::get('/dataTables', [App\Http\Controllers\MaterialRequestController::class, 'dataTables']);
                 Route::get('/select', [App\Http\Controllers\MaterialRequestController::class, 'select']);
                 Route::get('/print/{id}', [App\Http\Controllers\MaterialRequestController::class, 'print']);
+                Route::get('/history/{id}', [App\Http\Controllers\MaterialRequestController::class, 'history']);
 
                 Route::post('/store', [App\Http\Controllers\MaterialRequestController::class, 'store']);
                 Route::post('/update/{id}', [App\Http\Controllers\MaterialRequestController::class, 'update']);
@@ -83,13 +84,40 @@
                 Route::get('/edit/{id}', [App\Http\Controllers\MaterialUsageController::class, 'edit']);
                 Route::get('/dataTables', [App\Http\Controllers\MaterialUsageController::class, 'dataTables']);
                 Route::get('/select', [App\Http\Controllers\MaterialUsageController::class, 'select']);
-                Route::get('/select', [App\Http\Controllers\MaterialUsageController::class, 'select']);
                 Route::get('/print/{id}', [App\Http\Controllers\MaterialUsageController::class, 'print']);
 
                 Route::post('/store', [App\Http\Controllers\MaterialRequestController::class, 'store']);
                 Route::post('/update/{id}', [App\Http\Controllers\MaterialRequestController::class, 'update']);
 
                 Route::delete('/delete/{id}', [App\Http\Controllers\MaterialRequestController::class, 'destroy']);
+            });
+
+            Route::prefix('material-receipt')->group(function(){
+                Route::get('/', [App\Http\Controllers\MaterialReceiptController::class, 'index']);
+                Route::get('/create', [App\Http\Controllers\MaterialReceiptController::class, 'create']);
+                Route::get('/edit/{id}', [App\Http\Controllers\MaterialReceiptController::class, 'edit']);
+                Route::get('/dataTables', [App\Http\Controllers\MaterialReceiptController::class, 'dataTables']);
+                Route::get('/select', [App\Http\Controllers\MaterialReceiptController::class, 'select']);
+                Route::get('/print/{id}', [App\Http\Controllers\MaterialReceiptController::class, 'print']);
+
+                Route::post('/store', [App\Http\Controllers\MaterialReceiptController::class, 'store']);
+                Route::post('/update/{id}', [App\Http\Controllers\MaterialReceiptController::class, 'update']);
+
+                Route::delete('/delete/{id}', [App\Http\Controllers\MaterialReceiptController::class, 'destroy']);
+            });
+
+            Route::prefix('adjustment-stock')->group(function(){
+                Route::get('/', [App\Http\Controllers\AdjustmentStockController::class, 'index']);
+                Route::get('/create', [App\Http\Controllers\AdjustmentStockController::class, 'create']);
+                Route::get('/edit/{id}', [App\Http\Controllers\AdjustmentStockController::class, 'edit']);
+                Route::get('/dataTables', [App\Http\Controllers\AdjustmentStockController::class, 'dataTables']);
+                Route::get('/select', [App\Http\Controllers\AdjustmentStockController::class, 'select']);
+                Route::get('/print/{id}', [App\Http\Controllers\AdjustmentStockController::class, 'print']);
+
+                Route::post('/store', [App\Http\Controllers\AdjustmentStockController::class, 'store']);
+                Route::post('/update/{id}', [App\Http\Controllers\AdjustmentStockController::class, 'update']);
+
+                Route::delete('/delete/{id}', [App\Http\Controllers\AdjustmentStockController::class, 'destroy']);
             });
 
         });

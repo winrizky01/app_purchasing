@@ -6,6 +6,11 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
 use App\Models\MaterialRequest;
+use App\Models\MaterialRequestDetail;
+use App\Models\MRHistory;
+use App\Models\MRDHistory;
+
+use App\Models\AdjustmentStock;
 use App\Models\Division;
 use App\Models\Approval;
 
@@ -21,14 +26,15 @@ function generateCodeDocument($transactionType, $division=false){
     }
 
     if($transactionType == "MR"){
-        $last_document  = MaterialRequest::where("division_id", $division);
+        $last_document  = MaterialRequest::where("division_id", $division)->where("request_date","LIKE","%".date("Y-m")."%");
     }
     else if($transactionType == "PR"){
 
     }
-    $last_document = $last_document->where("request_date","LIKE","%".date("Y-m")."%")
-                    ->orderBy("id", "DESC")
-                    ->first();
+    else if($transactionType == "ADJ"){
+        $last_document  = AdjustmentStock::where("date","LIKE","%".date("Y-m")."%");
+    }
+    $last_document = $last_document->orderBy("id", "DESC")->first();
 
     $last_code = "000";
     if($last_document){
@@ -109,6 +115,49 @@ function findAllStatusGeneral($param)
     }
 
     return $query->first();
+}
+
+function transactionHistoryRevision($transactionType, $transaction_id){
+    $countRevision = 0;
+
+        if($transactionType == "MR"){
+            $materialRequest = MaterialRequest::find($transaction_id);
+            $materialRequestHistory = MRHistory::create([
+                'type_material_request'     => $materialRequest->material_request_type,
+                'code'                      => $materialRequest->code,
+                'request_date'              => $materialRequest->request_date,
+                'department_id'             => $materialRequest->department_id,
+                'division_id'               => $materialRequest->division_id,
+                'justification'             => $materialRequest->justification,
+                'remark_id'                 => $materialRequest->remark_id,
+                'document_photo'            => $materialRequest->document_photo,
+                'document_pdf'              => $materialRequest->document_pdf,
+                "revisied_at"               => date("Y-m-d H:i:s"),
+                "revisied_by"               => auth()->user()->id,
+            ]);
+    
+            if(!$materialRequestHistory){
+                return false;
+            }
+
+            $materialRequestDetail = MaterialRequestDetail::where("material_request_id",$transaction_id)->get();
+            foreach($materialRequestDetail as $item){
+                $materialRequestDetailHistory = MRDHistory::create([
+                    'mr_history_id' => $materialRequestHistory->id,
+                    'product_id' => $item->product_id,
+                    'qty'        => $item->qty,
+                    'notes'      => $item->notes,
+                ]);
+
+                if(!$materialRequestDetailHistory){
+                    return false;
+                }
+            }
+    
+            $countRevision = $materialRequest->revision + 1;
+        }
+
+    return $countRevision;
 }
 
 function pageControl($request){

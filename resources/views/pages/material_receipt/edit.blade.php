@@ -74,7 +74,7 @@
                             <div class="row mb-3">
                                 <div class="col-md-12">
                                     <label class="form-label">Revision / Rejected Reason</label>
-                                    <textarea class="form-control" name="last_revision" readonly>{{ $data->last_reason}}</textarea>
+                                    <textarea class="form-control" readonly>{{ $data->last_reason}}</textarea>
                                 </div>
                             </div>
 
@@ -133,13 +133,13 @@
                             <a href="{{ url('inventory/material-request') }}" class="btn btn-secondary btn-sm">Cancel</a>
                             @if(session('role')->name == "Tech Support")
                             <button type="button" id="buttonModalReject" data-value="Reject" class="btn btn-danger btn-sm buttonModalConfirm">Reject</button>
-                            <button type="submit" id="buttonModalApproved" data-value="Approved" class="btn btn-primary btn-sm buttonModalConfirm">Submit</button>
+                            <button type="submit" name="submitButton" id="buttonModalApproved" data-value="Approved" class="btn btn-primary btn-sm buttonModalConfirm">Submit</button>
                             @elseif(session('role')->name == "Plant Manager")
-                            <button type="submit" id="buttonModalApproved" data-value="Approved" class="btn btn-primary btn-sm buttonModalConfirm">Submit</button>
+                            <button type="submit" name="submitButton" id="buttonModalApproved" data-value="Approved" class="btn btn-primary btn-sm buttonModalConfirm">Submit</button>
                             <button type="button" id="buttonModalRevision" data-value="Revision" class="btn btn-warning btn-sm buttonModalConfirm">Revision</button>
                             <button type="button" id="buttonModalReject" data-value="Reject" class="btn btn-danger btn-sm buttonModalConfirm">Reject</button>
                             @elseif(session('role')->name == "End User")
-                            <button type="submit" id="buttonModalApproved" data-value="Update" class="btn btn-primary btn-sm buttonModalConfirm">Submit</button>
+                            <button type="submit" name="submitButton" id="buttonModalApproved" data-value="Update" class="btn btn-primary btn-sm buttonModalConfirm">Submit</button>
                             @endif
                         </div>
                     </form>
@@ -172,7 +172,6 @@
                                         <th>SKU</th>
                                         <th>Name</th>
                                         <th>Unit</th>
-                                        <th style="width: 20%">Stock</th>
                                         <th style="width: 20%">Qty</th>
                                         <th style="width: 20%">Actions</th>
                                     </tr>
@@ -212,34 +211,21 @@
     </div>
 
     <script type="text/javascript">
-        // setup data global
-        var isChanged       = false;
-        var initialValues   = {};
-        var role            = "{{ session('role')->name }}";
-        var mode            = "{{ $mode }}";
-        var dataId          = "{{ $data->id }}";
-        var formCheck       = true;
-        var formMode        = "";
+        var role   = "{{session('role')->name}}";
+        var mode   = "{{ $mode }}";
+        var dataId = "{{ $data->id }}";
+        var formCheck  = true;
+        var formMode   = "";
         var existingMeterialRequestType = <?php echo json_encode($data->type_material_request); ?>;
         var existingRemarkId            = <?php echo json_encode($data->remark_id); ?>;
-        var documentSatus               = <?php echo json_encode($data->document_status->name);?>;
-        var existingDocumentStatus      = <?php echo json_encode($data->document_status_id);?>;
-        // setup data global
+        var documentSatus = <?php echo json_encode($data->document_status->name);?>;
+        var existingDocumentStatus = <?php echo json_encode($data->document_status_id);?>;
         
         // Setup Datatable
         var ajaxUrl  = "{{ url('master/product/dataTables') }}";
         var ajaxData = [];
-        var columns  = [{ data: 'sku' }, { data: 'name' }, {data: 'product_unit.name'}, { data: 'stock' }, { data: 'qty' }, { data: 'action' }];
+        var columns  = [{ data: 'sku' }, { data: 'name' }, {data: 'product_unit.name'}, { data: 'qty' }, { data: 'action' }];
         var columnDefs  =  [
-            {
-                // Qty
-                targets: -3,
-                render: function(data, type, full, meta) {
-                    var status = '<input type="number" min="1" class="form-control form-control-sm" id="stock" name="stock" value="'+data+'" readonly/>';
-
-                    return (status);
-                }
-            },
             {
                 // Qty
                 targets: -2,
@@ -263,12 +249,28 @@
             }
         ];
         var buttons =  []
-        // Setup Datatable
-
+    
         $(document).ready(function() {
             if((mode == "show")){
                 $("form :input").prop("disabled", true);
             }
+
+            // initial change
+            var isChanged = false;
+            var initialValues = {};
+            $('form :input').not('select[name="remark_id"], select[name="document_status_id"]').each(function() {
+                initialValues[$(this).attr('name')] = $(this).val();
+            });
+            $('form :input').not('select[name="remark_id"], select[name="document_status_id"]').on('change keyup', function() {
+                var fieldName = $(this).attr('name');
+                var newValue = $(this).val();
+                var oldValue = initialValues[fieldName];
+
+                if (newValue !== oldValue) {
+                    isChanged = true;
+                }
+            });
+            // initial change
 
             // request select option
             var whereInStatusDocRole = "";
@@ -310,39 +312,13 @@
             });
             // request select option
 
-            // initial change, pengecekan perubahan data
-            $('form :input').not('select[name="document_status_id"]').on('change keyup', function() {
-                var anyChange = false;
-
-                // Periksa setiap input untuk perubahan, kecuali elemen dengan ID document_status_id
-                $('form :input').not('#document_status_id').each(function() {
-                    var fieldName = $(this).attr('name');
-                    var newValue = $(this).val();
-                    var oldValue = initialValues[fieldName];
-
-                    // Jika ada perubahan pada input tertentu, atur isChanged ke true
-                    if (newValue !== oldValue) {
-                        anyChange = true;
-                        console.log("Field Name: " + fieldName);
-                        console.log("New Value: " + newValue);
-                        console.log("Old Value: " + oldValue);
-                        return false; // Keluar dari loop karena sudah ada perubahan
-                    }
-                });
-
-                // Set isChanged berdasarkan apakah ada perubahan input
-                isChanged = anyChange;
-                $('input[name="isChange"]').val(anyChange);
-            });
-            // initial change, pengecekan perubahan data
-
-            // modal produk
             $('#showModal').click(function() {
                 // Setup Datatable
                 initializeDataTable(ajaxUrl, ajaxData, columns, columnDefs, buttons);
 
                 $('#modalShowProduct').modal('toggle');
             });
+
             $('body').on('click', '.btnAddProductModal', function(){
                 var selectedRow = $(this).closest('tr');
                 var modalQty    = selectedRow.find('#modalQty').val();
@@ -358,13 +334,13 @@
             $('body').on('click', '.deleteList', function(){
                 $(this).closest('tr').remove();
             });
+
             $('body').on('change', '#modalProductCategory', function(){
                 // Setup Datatable
                 var ajaxData = {'product_category_id':$(this).val()};
                 // Setup Datatable
                 initializeDataTable(ajaxUrl, ajaxData, columns, columnDefs, buttons);
             });
-            // modal produk
 
             // handle button modal confirm
             $('.buttonModalConfirm').click(function(){
@@ -445,14 +421,6 @@
             });
         })
 
-        // fungsi init data awal dari db
-        function initialization(){
-            $('form :input').not('select[name="document_status_id"]').each(function() {
-                initialValues[$(this).attr('name')] = $(this).val();
-            });
-        }
-        // fungsi init data awal dari db
-
         function setDataSelect(optionType, response) {
             var id = "";
             var existingId = "";
@@ -485,8 +453,6 @@
                 }
                 $(id).append(option);
             });
-
-            initialization();
         }
 
         function handleAddModalProduct(param){

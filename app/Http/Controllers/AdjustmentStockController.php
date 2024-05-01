@@ -3,20 +3,16 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 
 use App\Models\User;
 use App\Models\Role;
 use App\Models\General;
-use App\Models\Product;
-use App\Models\MaterialRequest;
-use App\Models\MaterialRequestDetail;
-use App\Models\MaterialRequestRevision;
-use App\Models\MRHistory;
-use App\Models\MRDHistory;
 use App\Models\Approval;
+use App\Models\Product;
+use App\Models\AdjustmentStock;
+use App\Models\AdjustmentStockDetail;
 
 use DB;
 use Redirect;
@@ -26,13 +22,13 @@ use Validator;
 use File;
 use PDF;
 
-class MaterialRequestController extends Controller
+class AdjustmentStockController extends Controller
 {
     protected $type_transaction_id;
 
     public function __construct()
     {
-        $this->type_transaction_id = findAllStatusGeneral(["name"=>"MR"]);
+        $this->type_transaction_id = findAllStatusGeneral(["name"=>"ADJ"]);
         $this->type_transaction_id = $this->type_transaction_id->id;
     }
 
@@ -73,7 +69,7 @@ class MaterialRequestController extends Controller
 
             $offset = ($page - 1) * $limit;
             
-            $query = MaterialRequest::where($where)->orderBy("material_requests.id", "ASC");
+            $query = AdjustmentStock::where($where)->orderBy("adjustment_stocks.id", "ASC");
             if ($limit > 0) {
                 $query = $query->offset($offset)->limit($limit)->paginate($limit);
             } 
@@ -93,9 +89,9 @@ class MaterialRequestController extends Controller
             if(!pageControl($request)){
                 return redirect('/');
             }
-            $data["title"] = "List Material Request";
+            $data["title"] = "List Adjustment Stock";
 
-            $view = "pages.material_request.index";
+            $view = "pages.adjustment_stock.index";
             return view($view, $data);
         }
     }
@@ -121,9 +117,9 @@ class MaterialRequestController extends Controller
                 return redirect('/');
             }            
 
-            $data["title"] = "Add Material Request";
-            $data["document_number"] = generateCodeDocument("MR",auth()->user()->division_id);
-            $view = "pages.material_request.create";
+            $data["title"] = "Add Adjustment Stock";
+            $data["document_number"] = generateCodeDocument("ADJ",false);
+            $view = "pages.adjustment_stock.create";
             return view($view, $data);
         }
     }
@@ -136,37 +132,25 @@ class MaterialRequestController extends Controller
         }
         
         $validator = Validator::make($request->all(),[
-            'material_request_type_id' => 'required',
-            'justification'      => 'required',
-            'document_status_id' => 'required',
-            'request_date'       => 'required',
+            'stoct_type_id' => 'required',
+            'code' => 'required',
+            'date' => 'required',
+            'warehouse_id'  => 'required',
+            'document_status_id'=> 'required',
         ]);
 
         if($validator->fails()){
-            return handleErrorResponse($request, 'The following fields are required !', 'inventory/material-request', 404, null);
+            return handleErrorResponse($request, 'The following fields are required !', 'inventory/adjustment-stock', 404, null);
         }
 
         DB::beginTransaction();
         try {
-            $filephoto  = "";
-            $photo = "";
-            if ($request->hasFile('document_photo')) {
-                $filephoto= $request->file('document_photo');
-                $photo    = str_replace(" ", "-", $filephoto->getClientOriginalName());
-                $filephoto->move(public_path('template/assets/material_request/'), $photo);
-            }
-
-            $filepdf  = "";
-            $pdf = "";
-            if ($request->hasFile('document_pdf')) {
-                $filepdf= $request->file('document_pdf');
-                $pdf    = str_replace(" ", "-", $filepdf->getClientOriginalName());
-                $filepdf->move(public_path('template/assets/material_request/'), $pdf);
-            }
-
-            $newDocumentStatus = findAllStatusGeneral(["name"=>"Waiting Approval Tech Support"]);
+            // $newDocumentStatus = findAllStatusGeneral(["name"=>"Waiting Approval Tech Support"]);
             $getDocumentStatus = findAllStatusGeneral(["id"=>$request->document_status_id]);
             $doc_status = $getDocumentStatus->id;
+
+            
+
             if($getDocumentStatus->name == "Submit"){
                 $doc_status = $newDocumentStatus->id;
             }
@@ -356,24 +340,22 @@ class MaterialRequestController extends Controller
             return redirect('/');
         }
         
-        // validasi
         $validator = Validator::make($request->all(),[
             'material_request_type_id' => 'required',
             'justification'      => 'required',
             'document_status_id' => 'required',
             'request_date'       => 'required',
         ]);
+
         if($validator->fails()){
             return handleErrorResponse($request, 'The following fields are required !', 'inventory/material-request', 404, null);
         }
-        // validasi
 
         $materialRequest = MaterialRequest::find($id);
         if(!$materialRequest){
             return handleErrorResponse($request, 'Opps, data not found!', 'inventory/material-request', 404, null);
         }
 
-        // akses
         $getDocumentStatus = findAllStatusGeneral(["id"=>$materialRequest->document_status_id]);
         $getDocumentStatus = $getDocumentStatus->name;
 
@@ -389,21 +371,9 @@ class MaterialRequestController extends Controller
         else{
             return handleErrorResponse($request, "Opps, error approval data!", 'inventory/material-request', 404, null);
         }
-        // akses
 
         DB::beginTransaction();
         try {
-            $revision = 0; // nilai revisi ke
-            // tambahkan histori revisi jika user melakukan revisi
-            if($request->isChange == "true"){
-                $addRevision = transactionHistoryRevision("MR", $id);
-                if($addRevision == false){
-                    return handleErrorResponse($request, "Opps, error approval data!", 'inventory/material-request', 404, null);
-                }
-                $revision = $addRevision;
-            }
-            // tambahkan histori revisi jika user melakukan revisi
-
             $filephoto  = "";
             $photo = "";
             if ($request->hasFile('document_photo')) {
@@ -429,7 +399,6 @@ class MaterialRequestController extends Controller
             $materialRequest->updated_at            = date("Y-m-d H:i:s");
             $materialRequest->updated_by            = auth()->user()->id;
             $materialRequest->last_reason           = null;
-            $materialRequest->revision              = $revision;
             $materialRequest->save();
 
             if($materialRequest){
@@ -461,14 +430,12 @@ class MaterialRequestController extends Controller
                     }
                 }
 
-                // tambahkan approval untuk pihak tech support di db 
-                // tapi tidak perlu ditampilkan di frontend
+                // tambahkan approval untuk pihak tech support di db tapi tidak perlu ditampilkan di frontend
                 if($getDocumentStatus == "Waiting Approval Tech Support"){
                     $sid = findAllStatusGeneral(["name"=>"Approved Tech Support"]);
-                    $app = approvalTransaction($this->type_transaction_id, $materialRequest->id, $sid->id);
+                    $app = approvalTransaction($this->type_transaction_id, $materialRequest->id, $app->id);
                 }
-                // tambahkan approval untuk pihak tech support di db 
-                // tapi tidak perlu ditampilkan di frontend
+                // tambahkan approval untuk pihak tech support di db tapi tidak perlu ditampilkan di frontend
 
                 $approval = approvalTransaction($this->type_transaction_id, $materialRequest->id, $newDocumentStatus->id);
                 if($approval == false){
@@ -689,7 +656,7 @@ class MaterialRequestController extends Controller
             $where[] = ['material_requests.document_status_id', $request->status];
         }
 
-        $data = MaterialRequest::with(['department','document_status'])->where($where)->get();
+        $data = AdjustmentStock::with(['detail','document_status'])->where($where)->get();
 
         return datatables()->of($data)->toJson();
     }
@@ -761,17 +728,5 @@ class MaterialRequestController extends Controller
         $pdf = PDF::loadHtml($pdfContent);
         
         return $pdf->download('document.pdf');
-    }
-
-    public function history(Request $request, $id){
-        $materialRequest = MaterialRequest::find($id);
-        $code = $materialRequest->code;
-
-        $history = MRHistory::with(['material_type','remark', 'revisiedBy', 'detail', 'detail.product', 'detail.product.product_category', 'detail.product.product_unit'])->where("code",$code)->get();
-        $data["title"] = "History Revision Material Request - ".$code;
-        $data["data"]  = $history;
-
-        $view = "pages.material_request.history";
-        return view($view, $data);
     }
 }

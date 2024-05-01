@@ -53,7 +53,7 @@
             </div>             
         </div>
         
-        <!-- Material List Table -->
+        <!-- Product List Table -->
         <div class="card">
             <div class="card-header border-bottom">
                 <h5 class="card-title mb-1">{{ $title }}</h5>
@@ -70,7 +70,6 @@
                             <th>Request Date</th>
                             <th>No. Document</th>
                             <th>Department</th>
-                            <th>Revision</th>
                             <th>Status</th>
                             <th>Actions</th>
                         </tr>
@@ -112,9 +111,9 @@
     <script type="text/javascript">
         // Setup Datatable
         var role     = "{{session('role')->name}}";
-        var ajaxUrl  = "{{ url('inventory/material-request/dataTables') }}";
+        var ajaxUrl  = "{{ url('inventory/adjustment-stock/dataTables') }}";
         var ajaxData = [];
-        var columns  = [{ data: 'request_date' }, { data: 'code' }, {data: 'department.name'}, {data: 'revision'}, { data: 'status' }, { data: 'action' }];
+        var columns  = [{ data: 'date' }, { data: 'code' }, {data: 'department.name'}, { data: 'status' }, { data: 'action' }];
         var columnDefs  =  [
             {
                 // Convert date
@@ -126,17 +125,6 @@
                     var formattedYear = parts[2];
                     var formattedDate = formattedDay + '-' + formattedMonth + '-' + formattedYear;
                     return formattedDate;
-                }
-            },
-            {
-                // Check History
-                targets: -3,
-                render: function(data, type, full, meta) {
-                    var a = data;
-                    if(data > 0){
-                        a = '<a href="{{ url("inventory/material-request/history") }}/' + full.id + '" class="text-warning" style="text-decoration:underline">'+ data +'</a>';
-                    }
-                    return a;
                 }
             },
             {
@@ -185,8 +173,8 @@
                             action += '<a href="{{ url("inventory/material-request/show") }}/' + full.id + '" class="text-body"><i class="ti ti-eye ti-sm mx-2"></i></a>';
                         }
                     }
-                    else if(role == "Plant Manager"){
-                        if(full.document_status.name == "Waiting Approval Plant Manager"){
+                    else if(role == "Plan Manager"){
+                        if(full.document_status.name == "Waiting Approval Plan Manager"){
                             action += '<a href="{{ url("inventory/material-request/edit") }}/' + full.id + '" class="text-body edit-record"><i class="ti ti-edit ti-sm me-2"></i></a>';
                         }
                         else{
@@ -206,9 +194,9 @@
         var buttons     =  [
             {
                 className: 'btn btn-primary mx-3 btn-sm',
-                text: 'Add Material Request',
+                text: 'Add Adjustment Stock',
                 action: function() {
-                    window.location.href = '{{url("inventory/material-request/create")}}'; // Ganti URL_ANDA_DISINI dengan URL yang diinginkan
+                    window.location.href = '{{url("inventory/adjustment-stock/create")}}'; // Ganti URL_ANDA_DISINI dengan URL yang diinginkan
                 }
             }, 
         ]

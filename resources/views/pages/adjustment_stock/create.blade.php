@@ -13,8 +13,8 @@
                         <div class="card-body row g-3">
                             <div class="row mb-3">
                                 <div class="col">
-                                    <label class="form-label" for="material_request_type_id">Type Material Request</label>
-                                    <select class="form-select select2" id="material_request_type_id" name="material_request_type_id" data-allow-clear="true" required>
+                                    <label class="form-label" for="stock_type_id">Stock Type</label>
+                                    <select class="form-select select2" id="stock_type_id" name="stock_type_id" data-allow-clear="true" required>
                                         <option value="">Select Value</option>
                                     </select>
                                 </div>
@@ -29,25 +29,11 @@
                                 </div>
                             </div>
                             <div class="row mb-3">
-                                <div class="col">
-                                    <label class="form-label" for="document_photo">Photo</label>
-                                    <input type="file" class="form-control" id="document_photo" name="document_photo">
-                                </div>
-                                <div class="col">
-                                    <label class="form-label" for="document_pdf">Document PDF</label>
-                                    <input type="file" class="form-control" id="document_pdf" name="document_pdf">
-                                </div>
-                            </div>
-                            <div class="row mb-3">
-                                <div class="col">
-                                    <label class="form-label" for="product_category_id">Justification</label>
-                                    <textarea class="form-control" id="justification" name="justification" rows="1" required></textarea>
-                                </div>
-                                <div class="col">
+                                <div class="col-md-12">
                                     <div class="row mb-3">
                                         <div class="col">
-                                            <label class="form-label" for="remark_id">Remaks</label>
-                                            <select class="form-select select2" name="remark_id" id="remark_id" data-allow-clear="true" required>
+                                            <label class="form-label" for="warehouse_id">Warehouse</label>
+                                            <select class="form-select select2" name="warehouse_id" id="warehouse_id" data-allow-clear="true" required>
                                                 <option value="">Select Value</option>
                                             </select>
                                         </div>
@@ -59,11 +45,15 @@
                                         </div>                
                                     </div>
                                 </div>
+                                <div class="col-md-12">
+                                    <label class="form-label" for="description">Description</label>
+                                    <textarea class="form-control" id="description" name="description" rows="2" required></textarea>
+                                </div>
                             </div>
 
                             <div class="col-md-12">
                                 <div class="divider">
-                                    <div class="divider-text">Material Request Detail</div>
+                                    <div class="divider-text">Adjustment Detail</div>
                                 </div>
                             </div>
                             <div class="col-md-2">
@@ -72,10 +62,10 @@
                             <div class="col-md-12">
                                 <table class="table" id="listMaterialDetail">
                                     <thead>
-                                        <th>Cat.</th>
+                                        <th>Code</th>
                                         <th>Product</th>
-                                        <th>Function</th>
                                         <th>Unit</th>
+                                        <th style="width: 15%">Qty On Hand</th>
                                         <th style="width: 12%">Qty</th>
                                         <th>Note</th>
                                         <th>Action</th>
@@ -85,7 +75,7 @@
                             </div>
                             <div class="col-md-12">
                                 <div class="divider">
-                                    <div class="divider-text">Material Request Detail</div>
+                                    <div class="divider-text">Adjustment Detail</div>
                                 </div>
                             </div>
                         </div>
@@ -121,10 +111,10 @@
                                     <tr>
                                         <th>SKU</th>
                                         <th>Name</th>
-                                        <th>Unit</th>
-                                        <th style="width: 20%">Stock</th>
+                                        <th style="width: 10%">Unit</th>
+                                        <th style="width: 20%">Qty On Hand</th>
                                         <th style="width: 20%">Qty</th>
-                                        <th style="width: 20%">Actions</th>
+                                        <th style="width: 10%">Actions</th>
                                     </tr>
                                 </thead>
                             </table>
@@ -141,15 +131,6 @@
         var ajaxData = [];
         var columns  = [{ data: 'sku' }, { data: 'name' }, {data: 'product_unit.name'}, { data: 'stock' }, { data: 'qty' }, { data: 'action' }];
         var columnDefs  =  [
-            {
-                // Qty
-                targets: -3,
-                render: function(data, type, full, meta) {
-                    var status = '<input type="number" min="1" class="form-control form-control-sm" id="stock" name="stock" value="'+data+'" readonly/>';
-
-                    return (status);
-                }
-            },
             {
                 // Qty
                 targets: -2,
@@ -176,15 +157,15 @@
     
         $(document).ready(function() {
             requestSelectAjax({
-                'url' : '{{ url("setting/general/select?type=material_request_type_id") }}',
+                'url' : '{{ url("setting/general/select?type=stock_type_id") }}',
                 'data': [],
-                'optionType' : 'material_request_type',
+                'optionType' : 'stock_type',
                 'type': 'GET'
             });
             requestSelectAjax({
-                'url' : '{{ url("setting/general/select?type=product_category_id") }}',
+                'url' : '{{ url("master/warehouse/select") }}',
                 'data': [],
-                'optionType' : 'product_category',
+                'optionType' : 'warehouse',
                 'type': 'GET'
             });
             requestSelectAjax({
@@ -201,6 +182,15 @@
             });
             
             $('#showModal').click(function() {
+                if($('#stock_type_id').val() == ''){
+                    toasMassage({status:false, message:'Opps, please select Stock Type!'});
+                    return false;
+                }
+                if($('#warehouse_id').val() == ''){
+                    toasMassage({status:false, message:'Opps, please select Warehouse!'});
+                    return false;
+                }
+                
                 // Setup Datatable
                 initializeDataTable(ajaxUrl, ajaxData, columns, columnDefs, buttons);
 
@@ -214,17 +204,6 @@
 
                 if(modalQty == ""){
                     toasMassage({status:false, message:'Opps, please fill qty product!'});
-                    return false;
-                }
-
-                var qtyOnHand = selectedRow.find("#stock").val();
-                if(qtyOnHand == 0){
-                    toasMassage({status:false, message:'Opps, out of stock!'});
-                    return false;
-                }
-
-                if(modalQty > qtyOnHand){
-                    toasMassage({status:false, message:'Opps, insufficient stock!'});
                     return false;
                 }
 
@@ -251,10 +230,10 @@
                 id = "#modalProductCategory";
             } else if (optionType == 'document_status') {
                 id = "#document_status_id";
-            } else if (optionType == 'remark') {
-                id = "#remark_id";
-            } else if (optionType == 'material_request_type'){
-                id = "#material_request_type_id";
+            } else if (optionType == 'warehouse') {
+                id = "#warehouse_id";
+            } else if (optionType == 'stock_type'){
+                id = "#stock_type_id";
             }
             
             $.each(response.results, function(index, data) {
@@ -279,12 +258,11 @@
             }
             else{
                 var html = '<tr id="'+tempAccess+'">'+
-                        '<input type="hidden" name="material_request_details['+index+'][product_id]" value="'+tempAccess+'">'+
-                        '<td style="text-transform: capitalize">'+param["data"]["product_category"]["name"]+'</td>'+
+                        '<input type="hidden" name="adjustment_details['+index+'][product_id]" value="'+tempAccess+'">'+
+                        '<td style="text-transform: capitalize">'+param["data"]["code"]+'</td>'+
                         '<td style="text-transform: capitalize">'+param["data"]["name"]+'</td>'+
-                        '<td style="text-transform: capitalize">'+param["data"]["description"]+'</td>'+
-                        '<td style="text-transform: capitalize">'+param["data"]["stock"]+'</td>'+
                         '<td style="text-transform: capitalize">'+param["data"]["product_unit"]["name"]+'</td>'+
+                        '<td style="text-transform: capitalize">'+param["data"]["stock"]+'</td>'+
                         '<td style="text-transform: capitalize"><input type="number"class="form-control" name="material_request_details['+index+'][product_qty]" value="'+param["qty"]+'"></td>'+
                         '<td style="text-transform: capitalize"><input type="text" class="form-control" name="material_request_details['+index+'][product_note]"/></td>'+
                         '<td><button type="button" class="btn btn-danger btn-sm deleteList"><i class="fa fa-trash"></i></button></td>'+

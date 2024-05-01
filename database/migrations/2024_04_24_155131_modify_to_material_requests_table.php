@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::table('material_requests', function (Blueprint $table) {
             $table->dropColumn(['date']);
             $table->datetime('request_date')->nullable()->change();
+            $table->double('revision')->nullable();
 
             // $table->unsignedBigInteger('riviewed_by')->nullable();
             // $table->unsignedBigInteger('riviewed_at')->nullable();
@@ -40,9 +41,6 @@ return new class extends Migration
             // $table->dropColumn(['approved_at']);
             $table->dropColumn(['date']);
             $table->datetime('request_date')->nullable()->change();
-
-
-
         });
     }
 };
