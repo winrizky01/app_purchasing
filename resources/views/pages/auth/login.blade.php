@@ -8,7 +8,7 @@
                     <div class="card-body">
                         <!-- Logo -->
                         <div class="app-brand justify-content-center mb-4 mt-2">
-                                    <img src="{{ asset('template/assets/img/meepo.png') }}" class="img-fluid" />
+                            <img src="{{ asset('template/assets/img/meepo.png') }}" class="img-fluid" />
                         </div>
                         <!-- /Logo -->
                         <h4 class="mb-1 pt-2">Welcome to Meepo Aps! 👋</h4>
@@ -50,24 +50,6 @@
                                 <button class="btn btn-primary d-grid w-100" type="submit">Sign in</button>
                             </div>
                         </form>
-
-                        {{-- <div class="divider my-4">
-                            <div class="divider-text">or</div>
-                        </div>
-
-                        <div class="d-flex justify-content-center">
-                            <a href="javascript:;" class="btn btn-icon btn-label-facebook me-3">
-                                <i class="tf-icons fa-brands fa-facebook-f fs-5"></i>
-                            </a>
-
-                            <a href="javascript:;" class="btn btn-icon btn-label-google-plus me-3">
-                                <i class="tf-icons fa-brands fa-google fs-5"></i>
-                            </a>
-
-                            <a href="javascript:;" class="btn btn-icon btn-label-twitter">
-                                <i class="tf-icons fa-brands fa-twitter fs-5"></i>
-                            </a>
-                        </div> --}}
                     </div>
                 </div>
             </div>

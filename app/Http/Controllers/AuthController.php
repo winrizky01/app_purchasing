@@ -48,7 +48,14 @@ class AuthController extends Controller
     }
 
     public function forgot_password_process(Request $request)
-    {}
+    {
+        $email = $request->email;
+        $check = User::where("email", $email)->first();
+        if(!$check){
+            return redirect()->to('forgot-password')
+                ->withErrors("Akun Anda tidak kami temukan.");
+        }
+    }
 
     public function reset_password()
     {
