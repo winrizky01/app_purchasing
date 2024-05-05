@@ -7,7 +7,7 @@
 
                 <div class="card">
                     <h5 class="card-header border-bottom mb-3">{{ $title }}</h5>
-                    <form id="form" action="{{ url('inventory/material-request/store') }}" method="POST"
+                    <form id="form" action="{{ url('inventory/adjustment-stock/store') }}" method="POST"
                         enctype="multipart/form-data">
                         @csrf
                         <div class="card-body row g-3">
@@ -23,8 +23,8 @@
                                     <input type="text" class="form-control" id="code" name="code" value="{{ $document_number }}" readonly>
                                 </div>
                                 <div class="col">
-                                    <label class="form-label" for="request_date">Request Date</label>
-                                    <input type="text" class="form-control" id="request_date" name="request_date"
+                                    <label class="form-label" for="date">Request Date</label>
+                                    <input type="text" class="form-control" id="date" name="date"
                                         value="{{ date('d-m-Y') }}" readonly>
                                 </div>
                             </div>
@@ -263,8 +263,8 @@
                         '<td style="text-transform: capitalize">'+param["data"]["name"]+'</td>'+
                         '<td style="text-transform: capitalize">'+param["data"]["product_unit"]["name"]+'</td>'+
                         '<td style="text-transform: capitalize">'+param["data"]["stock"]+'</td>'+
-                        '<td style="text-transform: capitalize"><input type="number"class="form-control" name="material_request_details['+index+'][product_qty]" value="'+param["qty"]+'"></td>'+
-                        '<td style="text-transform: capitalize"><input type="text" class="form-control" name="material_request_details['+index+'][product_note]"/></td>'+
+                        '<td style="text-transform: capitalize"><input type="number"class="form-control" name="adjustment_details['+index+'][product_qty]" value="'+param["qty"]+'"></td>'+
+                        '<td style="text-transform: capitalize"><input type="text" class="form-control" name="adjustment_details['+index+'][product_note]"/></td>'+
                         '<td><button type="button" class="btn btn-danger btn-sm deleteList"><i class="fa fa-trash"></i></button></td>'+
                     '<tr>';
 

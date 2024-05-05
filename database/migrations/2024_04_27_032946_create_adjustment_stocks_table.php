@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('adjustment_stocks', function (Blueprint $table) {
             $table->id();
             $table->string('code')->nullable();
-            $table->date('date')->nullable();
+            $table->dateTime('date')->nullable();
             $table->unsignedBigInteger('stock_type_id')->nullable();
             $table->unsignedBigInteger('warehouse_id')->nullable();
             $table->text("description")->nullable();

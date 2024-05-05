@@ -120,6 +120,10 @@
                 Route::delete('/delete/{id}', [App\Http\Controllers\AdjustmentStockController::class, 'destroy']);
             });
 
+            Route::prefix('report')->group(function(){
+                Route::get('/stock-product', [App\Http\Controllers\ReportProductController::class, 'index']);
+                Route::get('/stock-product/dataTables', [App\Http\Controllers\ReportProductController::class, 'dataTables']);
+            });
         });
 
         Route::prefix('master')->group(function(){

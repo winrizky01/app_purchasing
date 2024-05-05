@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('mr_histories', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('from_material_request_id')->nullable();
             $table->unsignedBigInteger('type_material_request')->nullable();
             $table->string('code')->nullable();
             $table->datetime('request_date')->nullable();

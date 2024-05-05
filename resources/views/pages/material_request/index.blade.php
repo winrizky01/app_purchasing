@@ -132,7 +132,7 @@
                 // Check History
                 targets: -3,
                 render: function(data, type, full, meta) {
-                    var a = data;
+                    var a = 0;
                     if(data > 0){
                         a = '<a href="{{ url("inventory/material-request/history") }}/' + full.id + '" class="text-warning" style="text-decoration:underline">'+ data +'</a>';
                     }

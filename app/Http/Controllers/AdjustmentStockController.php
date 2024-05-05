@@ -132,7 +132,7 @@ class AdjustmentStockController extends Controller
         }
         
         $validator = Validator::make($request->all(),[
-            'stoct_type_id' => 'required',
+            'stock_type_id' => 'required',
             'code' => 'required',
             'date' => 'required',
             'warehouse_id'  => 'required',
@@ -149,30 +149,23 @@ class AdjustmentStockController extends Controller
             $getDocumentStatus = findAllStatusGeneral(["id"=>$request->document_status_id]);
             $doc_status = $getDocumentStatus->id;
 
-            
-
             if($getDocumentStatus->name == "Submit"){
-                $doc_status = $newDocumentStatus->id;
+                //$doc_status = $newDocumentStatus->id;
             }
 
-            $materialRequest = MaterialRequest::create([
-                'type_material_request'     => $request->material_request_type_id,
-                'code'                      => $request->code,
-                'request_date'              => date("Y-m-d H:i:s"),
-                'department_id'             => auth()->user()->department_id,
-                'division_id'               => auth()->user()->division_id,
-                'justification'             => $request->justification,
-                'remark_id'                 => $request->remark_id,
-                'document_photo'            => $photo !== "" ? 'template/assets/material_request/'.$photo : null,
-                'document_pdf'              => $pdf !== "" ? 'template/assets/material_request/'.$pdf : null,
-                'document_status_id'        => $doc_status,
-                "created_at"                => date("Y-m-d H:i:s"),
-                "created_by"                => auth()->user()->id,
+            $adjustment = AdjustmentStock::create([
+                'code'              => $request->code,
+                'date'              => date("Y-m-d H:i:s", strtotime($request->date)),
+                'stock_type_id'     => $request->stock_type_id,
+                'warehouse_id'      => $request->warehouse_id,
+                'description'       => $request->description,
+                'document_status_id'=> $doc_status,
+                "created_at"        => date("Y-m-d H:i:s"),
+                "created_by"        => auth()->user()->id,
             ]);
-            if($materialRequest){
-
-                if ($request->material_request_details) {
-                    foreach ($request->material_request_details as $key => $value) {
+            if($adjustment){
+                if ($request->adjustment_details) {
+                    foreach ($request->adjustment_details as $key => $value) {
                         if($request->expectsJson()){
                             $product_id = null;
                             $qty        = null;
@@ -184,33 +177,47 @@ class AdjustmentStockController extends Controller
                             $notes      = $value["product_note"];
                         }
 
-                        $materialRequestDetail = MaterialRequestDetail::create([
-                            'material_request_id' => $materialRequest->id,
-                            'product_id' => $product_id,
-                            'qty'        => $qty,
-                            'notes'      => $notes,
+                        $adjustmentDetail = AdjustmentStockDetail::create([
+                            'adjustment_stock_id' => $adjustment->id,
+                            'stock_type_id' => $request->stock_type_id,
+                            'product_id'    => $product_id,
+                            'qty'           => $qty,
+                            'notes'         => $notes,
                         ]);
 
-                        if (!$materialRequestDetail) {
+                        if (!$adjustmentDetail) {
                             DB::rollback();
-                            return handleErrorResponse($request, "Opps, data failed created material request details", 'inventory/material-request', 404, null);
+                            return handleErrorResponse($request, "Opps, data failed created adjustment details", 'inventory/adjustment-stock', 404, null);
                         }
+
+                        $productStock = productStock(
+                            $this->type_transaction_id, 
+                            $adjustment->id, 
+                            $request->warehouse_id, 
+                            null, 
+                            $request->stock_type_id, 
+                            $product_id, 
+                            $qty);
+                        if($productStock == false){
+                            DB::rollback();
+                            return handleErrorResponse($request, "Opps, error product stock", 'inventory/adjustment-stock', 404, null);
+                        }    
                     }
                 }
 
                 $getDocumentStatus = findAllStatusGeneral(["id"=>$request->document_status_id]);
                 if($getDocumentStatus->name == "Submit"){
-                    $approval = approvalTransaction($this->type_transaction_id, $materialRequest->id, $newDocumentStatus->id);
-                    if($approval == false){
-                        DB::rollback();
-                        return handleErrorResponse($request, "Opps, error approval data", 'inventory/material-request', 404, null);
-                    }
+                    // $approval = approvalTransaction($this->type_transaction_id, $materialRequest->id, $newDocumentStatus->id);
+                    // if($approval == false){
+                    //     DB::rollback();
+                    //     return handleErrorResponse($request, "Opps, error approval data", 'inventory/adjustment-stock', 404, null);
+                    // }
                 }
 
             }
         } catch (Exception $e) {
             DB::rollback();
-            return handleErrorResponse($request, $e->getMessage(), 'inventory/material-request', 404, null);
+            return handleErrorResponse($request, $e->getMessage(), 'inventory/adjustment-stock', 404, null);
         }
 
         DB::commit();
@@ -225,7 +232,7 @@ class AdjustmentStockController extends Controller
         }
         else{
             Session::put('success','Data successfuly created.');
-            return redirect()->to('inventory/material-request');
+            return redirect()->to('inventory/adjustment-stock');
         }
     }
 
@@ -656,7 +663,7 @@ class AdjustmentStockController extends Controller
             $where[] = ['material_requests.document_status_id', $request->status];
         }
 
-        $data = AdjustmentStock::with(['detail','document_status'])->where($where)->get();
+        $data = AdjustmentStock::with(['warehouse','document_status'])->where($where)->get();
 
         return datatables()->of($data)->toJson();
     }

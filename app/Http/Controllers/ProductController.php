@@ -81,7 +81,7 @@ class ProductController extends Controller
     }
 
     public function create(Request $request)
-    {        
+    {
         $data["title"] = "Add Product";
 
         $view = "pages.product.create";

@@ -11,23 +11,26 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Schema::create('product_stocks', function (Blueprint $table) {
-            // $table->id();
-            // $table->unsignedBigInterger('warehouse_id')->nullable();
-            // $table->unsignedBigInterger('stock_type_id')->nullable();
-            // $table->unsignedBigInterger('stock_type_name')->nullable();
-            // $table->unsignedBigInterger('product_id')->nullable();
-            // $table->double('qty')->default(0);
-            // $table->timestamps();
+        Schema::create('product_stocks', function (Blueprint $table) {
+            $table->id();
+            $table->date('date')->nullable();
+            $table->unsignedBigInteger('type_transaction_id')->nullable();
+            $table->unsignedBigInteger('transaction_id')->nullable();
+            $table->unsignedBigInteger('warehouse_id')->nullable();
+            $table->unsignedBigInteger('section_warehouse_id')->nullable();
+            $table->unsignedBigInteger('stock_type_id');
+            $table->string('stock_type_name', 5)->nullable();
+            $table->unsignedBigInteger('product_id');
+            $table->double('qty')->default(0);
+            $table->timestamps();
+            
 
-            // $table->unsignedBigInteger('created_by')->nullable();
-            // $table->unsignedBigInteger('updated_by')->nullable();
-            // $table->unsignedBigInteger('deleted_by')->nullable();
+            $table->unsignedBigInteger('created_by')->nullable();
+            $table->unsignedBigInteger('updated_by')->nullable();
 
-            // $table->foreign('created_by')->references('id')->on('users')->cascadeOnDelete();
-            // $table->foreign('updated_by')->references('id')->on('users')->cascadeOnDelete();
-            // $table->foreign('deleted_by')->references('id')->on('users')->cascadeOnDelete();
-        // });
+            $table->foreign('created_by')->references('id')->on('users')->cascadeOnDelete();
+            $table->foreign('updated_by')->references('id')->on('users')->cascadeOnDelete();
+        });
     }
 
     /**
@@ -35,6 +38,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Schema::dropIfExists('product_stocks');
+        Schema::dropIfExists('product_stocks');
     }
 };

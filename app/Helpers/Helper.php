@@ -13,6 +13,8 @@ use App\Models\MRDHistory;
 use App\Models\AdjustmentStock;
 use App\Models\Division;
 use App\Models\Approval;
+use App\Models\Product;
+use App\Models\ProductStock;
 
 function generateCodeDocument($transactionType, $division=false){
     if($division == false){
@@ -123,6 +125,7 @@ function transactionHistoryRevision($transactionType, $transaction_id){
         if($transactionType == "MR"){
             $materialRequest = MaterialRequest::find($transaction_id);
             $materialRequestHistory = MRHistory::create([
+                'from_material_request_id'  => $transaction_id,
                 'type_material_request'     => $materialRequest->material_request_type,
                 'code'                      => $materialRequest->code,
                 'request_date'              => $materialRequest->request_date,
@@ -158,6 +161,53 @@ function transactionHistoryRevision($transactionType, $transaction_id){
         }
 
     return $countRevision;
+}
+
+/**
+ * stock history
+ * stock warehouse
+ * counter stock on hand in product table
+ */
+function productStock($transactionType, $transaction_id, $warehouse_id, $section_wh_id, $stock_type_id, $product_id, $qty){
+    $stock_type_name = findAllStatusGeneral(['id'=>$stock_type_id]);
+    $productStock = ProductStock::create([
+        "date"                => date("Y-m-d"),
+        "type_transaction_id" => $transactionType,
+        "transaction_id"      => $transaction_id,
+        "warehouse_id"        => $warehouse_id,
+        "section_warehouse_id"=> $section_wh_id,
+        "stock_type_id"       => $stock_type_id,
+        "stock_type_name"     => $stock_type_name->name,
+        "product_id"          => $product_id,
+        "qty"                 => $qty,
+        "created_at"          => date("Y-m-d H:i:s"),
+        "created_by"          => auth()->user()->id
+    ]);
+
+    if(!$productStock){
+        return false;
+    }
+
+    // recounter stock on hand in product table
+    $product = Product::find($product_id);
+    $current_stock = $product->stock;
+    if($stock_type_name->name == "IN"){
+        $new_stock = ($current_stock * 1) + ($qty * 1);
+    }
+    else{
+        $new_stock = ($current_stock * 1) - ($qty * 1);
+
+        if($new_stock < 0){
+            return false;
+        }
+    }
+    $product->stock = $new_stock;
+    $product->save();
+    if(!$product){
+        return false;
+    }
+
+    return true;
 }
 
 function pageControl($request){

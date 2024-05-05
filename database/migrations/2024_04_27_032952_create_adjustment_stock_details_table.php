@@ -17,7 +17,7 @@ return new class extends Migration
             $table->unsignedBigInteger('stock_type_id')->nullable();
             $table->unsignedBigInteger('product_id')->nullable();
             $table->double("qty")->default(0);
-            $table->text("notes");
+            $table->text("notes")->nullable();
             $table->timestamps();
 
             $table->foreign('stock_type_id')->references('id')->on('generals')->cascadeOnDelete();

@@ -67,9 +67,9 @@
                 <table class="datatables table border-top">
                     <thead>
                         <tr>
-                            <th>Request Date</th>
+                            <th>Adjustment Date</th>
                             <th>No. Document</th>
-                            <th>Department</th>
+                            <th>Warehouse</th>
                             <th>Status</th>
                             <th>Actions</th>
                         </tr>
@@ -113,7 +113,7 @@
         var role     = "{{session('role')->name}}";
         var ajaxUrl  = "{{ url('inventory/adjustment-stock/dataTables') }}";
         var ajaxData = [];
-        var columns  = [{ data: 'date' }, { data: 'code' }, {data: 'department.name'}, { data: 'status' }, { data: 'action' }];
+        var columns  = [{ data: 'date' }, { data: 'code' }, {data: 'warehouse.name'}, { data: 'status' }, { data: 'action' }];
         var columnDefs  =  [
             {
                 // Convert date

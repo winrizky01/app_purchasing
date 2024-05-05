@@ -37,9 +37,9 @@
     <table id="header" style="width: 100%; border:3px; font-size:12pt; margin-bottom:15px">
         <thead>
             <tr>
-                <td width="30%" rowspan="6" style="text-transform: uppercase; text-align:center; border:1px solid;">aa</td>
-            </tr>
-            <tr>
+                <td width="30%" rowspan="5" style="text-transform: uppercase; text-align:center; border:1px solid;">
+                    <img src="{{ public_path('template/assets/img/meepo.png') }}" class="img-fluid" />
+                </td>
                 <td colspan="2" style="text-transform: uppercase; text-align:center; border:1px solid;"><strong>Material Request</strong></td>
             </tr>
             <tr>
@@ -155,15 +155,15 @@
             <td style="text-align:center; border:1px solid; height:80px"></td>
         </tr>
         <tr>
-            <td style="text-align:center; border:1px solid;">
+            <td style="text-align:center; border:1px solid; width:50%">
                 <span>{{ $data["signature"]["created"]["name"] }}</span><br/>
                 <span>{{ $data["signature"]["created"]["role"] }}</span>
             </td>
-            <td style="text-align:center; border:1px solid;">
+            <td style="text-align:center; border:1px solid; width:50%">
                 <span>{{ count($data["signature"]["riviwed"]) > 0 ? $data["signature"]["riviwed"]["name"] : "" }}</span><br/>
                 <span>{{ count($data["signature"]["riviwed"]) > 0 ? $data["signature"]["riviwed"]["role"] : "" }}</span><br/>
             </td>
-            <td style="text-align:center; border:1px solid;">
+            <td style="text-align:center; border:1px solid; width:50%">
                 <span>{{ count($data["signature"]["approved"]) > 0 ? $data["signature"]["approved"]["name"] : "" }}</span><br/>
                 <span>{{ count($data["signature"]["approved"]) > 0 ? $data["signature"]["approved"]["role"] : "" }}</span><br/>
             </td>

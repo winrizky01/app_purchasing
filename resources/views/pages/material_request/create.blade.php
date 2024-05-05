@@ -283,7 +283,6 @@
                         '<td style="text-transform: capitalize">'+param["data"]["product_category"]["name"]+'</td>'+
                         '<td style="text-transform: capitalize">'+param["data"]["name"]+'</td>'+
                         '<td style="text-transform: capitalize">'+param["data"]["description"]+'</td>'+
-                        '<td style="text-transform: capitalize">'+param["data"]["stock"]+'</td>'+
                         '<td style="text-transform: capitalize">'+param["data"]["product_unit"]["name"]+'</td>'+
                         '<td style="text-transform: capitalize"><input type="number"class="form-control" name="material_request_details['+index+'][product_qty]" value="'+param["qty"]+'"></td>'+
                         '<td style="text-transform: capitalize"><input type="text" class="form-control" name="material_request_details['+index+'][product_note]"/></td>'+

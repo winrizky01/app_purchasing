@@ -760,14 +760,23 @@ class MaterialRequestController extends Controller
 
         $pdf = PDF::loadHtml($pdfContent);
         
-        return $pdf->download('document.pdf');
+        return $pdf->download('material_request.pdf');
     }
 
     public function history(Request $request, $id){
         $materialRequest = MaterialRequest::find($id);
         $code = $materialRequest->code;
 
-        $history = MRHistory::with(['material_type','remark', 'revisiedBy', 'detail', 'detail.product', 'detail.product.product_category', 'detail.product.product_unit'])->where("code",$code)->get();
+        $history = MRHistory::with([
+            'material_type',
+            'remark', 
+            'revisiedBy', 
+            'detail', 
+            'detail.product', 
+            'detail.product.product_category', 
+            'detail.product.product_unit'])
+            ->where("from_material_request_id",$id)
+            ->get();
         $data["title"] = "History Revision Material Request - ".$code;
         $data["data"]  = $history;
 
