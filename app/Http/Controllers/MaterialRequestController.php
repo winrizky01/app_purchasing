@@ -393,7 +393,7 @@ class MaterialRequestController extends Controller
 
         DB::beginTransaction();
         try {
-            $revision = 0; // nilai revisi ke
+            $revision = $materialRequest->revision; // nilai revisi ke
             // tambahkan histori revisi jika user melakukan revisi
             if($request->isChange == "true"){
                 $addRevision = transactionHistoryRevision("MR", $id);

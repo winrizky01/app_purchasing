@@ -118,7 +118,7 @@
                                     class="ti ti-mail-opened fs-4"></i></a>
                         </div>
                     </li>
-                    <li class="dropdown-notifications-list scrollable-container">
+                    {{-- <li class="dropdown-notifications-list scrollable-container">
                         <ul class="list-group list-group-flush">
                             <li class="list-group-item list-group-item-action dropdown-notifications-item">
                                 <div class="d-flex">
@@ -320,7 +320,7 @@
                             class="dropdown-item d-flex justify-content-center text-primary p-2 h-px-40 mb-1 align-items-center">
                             View all notifications
                         </a>
-                    </li>
+                    </li> --}}
                 </ul>
             </li>
             <!--/ Notification -->
