@@ -8,9 +8,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 
 use App\Models\Product;
-use App\Models\ProductSerial;
 use App\Models\General;
 use App\Models\Role;
+use App\Models\MaterialUsage;
+use App\Models\MaterialUsageDetail;
 
 use DB;
 use Redirect;
@@ -21,22 +22,30 @@ use File;
 
 class MaterialUsageController extends Controller
 {
+    protected $type_transaction_id;
+
+    public function __construct()
+    {
+        $this->type_transaction_id = findAllStatusGeneral(["name"=>"USG"]);
+        $this->type_transaction_id = $this->type_transaction_id->id;
+    }
+
     public function select(Request $request)
     {
-        $query = Product::select(["id", "name", "name as text"]);
-        if($request->product_category_id != ""){
-            $query = $query->where("product_category_id",$request->product_category_id);
-        }
-        $query = $query->get();
+        // $query = Product::select(["id", "name", "name as text"]);
+        // if($request->product_category_id != ""){
+        //     $query = $query->where("product_category_id",$request->product_category_id);
+        // }
+        // $query = $query->get();
 
-        if($request->expectsJson() || $request->ajax()){
-            return response()->json([
-                'status' => true,
-                'message'=> "Product successfuly access",
-                'code'   => 200,
-                'results'=> $query
-            ], 200);
-        }
+        // if($request->expectsJson() || $request->ajax()){
+        //     return response()->json([
+        //         'status' => true,
+        //         'message'=> "Product successfuly access",
+        //         'code'   => 200,
+        //         'results'=> $query
+        //     ], 200);
+        // }
     }
 
     public function index(Request $request)
@@ -89,7 +98,7 @@ class MaterialUsageController extends Controller
     {
         $check_role = Role::find(auth()->user()->role);
         if(($check_role->name !== "Superadmin")&&($check_role->name !== "End User")){
-            return handleErrorResponse($request, 'Opps, sorry you dont have access!', 'purchasing/material-usage', 404, null);
+            return handleErrorResponse($request, 'Opps, sorry you dont have access!', 'inventory/material-usage', 404, null);
         }
 
         $data["title"] = "Add Material Usage";
@@ -100,54 +109,60 @@ class MaterialUsageController extends Controller
 
     public function store(Request $request)
     {
+        var_dump($request->all());die();
+
         $validator = Validator::make($request->all(),[
-            'product_category_id' => 'required',
-            'name'      => 'required',
-            'code'      => 'required',
-            'sku'       => 'required',
-            'unit_id'   => 'required',
-            'is_inventory'  => 'required',
-            'status'    => 'required'
+            'code'          => 'required',
+            'status'        => 'required',
+            'usage_date'    => 'required',
+            'warehouse_id'  => 'required'
         ]);
 
         if($validator->fails()){
-            return handleErrorResponse($request, 'The following fields are required !', 'master/product', 404, null);
+            return handleErrorResponse($request, 'The following fields are required !', 'inventory/material-usage', 404, null);
         }
 
         DB::beginTransaction();
         try {
-            $file  = "";
-            $photo = "";
-            if ($request->hasFile('media')) {
-                $file     = $request->file('media');
-                $photo    = str_replace(" ", "-", $file->getClientOriginalName());
-            }
-
-            $product = Product::create([
-                'product_category_id' => $request->product_category_id,
-                'name'          => $request->name,
+            $usage = MaterialUsage::create([
                 'code'          => $request->code,
-                'sku'           => $request->sku,
-                'unit_id'       => $request->unit_id,
-                'is_inventory'  => $request->is_inventory,
-                'dimension'     => $request->dimension,
-                'part_number'   => $request->part_number,
-                'machine_id'    => $request->machine_id,
+                'date'          => $request->usage_date,
+                'department_id' => $request->department_id,
+                'division_id'   => $request->division_id,
+                'warehouse_id'  => $request->warehouse_id,
                 "description"   => $request->description,
-                "photo"         => $photo !== "" ? 'template/assets/img/products/'.$photo : null,
-                "status"        => $request->status,
+                "document_status_id" => $request->status,
                 "created_at"    => date("Y-m-d H:i:s"),
                 "created_by"    => auth()->user()->id,
             ]);
 
-            if($product){
-                if($photo != ""){
-                    $file->move(public_path('template/assets/img/products/'), $photo);
+            if($usage){
+                foreach($request->material_usage_detail as $detail){
+                    $usageDetail = MaterialUsageDetail::create([
+                        "material_usage_id"             => $usage->id,
+                        "material_request_id"           => $detail->material_request_id,
+                        "material_request_detail_id"    => $detail->material_request_detail_id,
+                        "product_id" => $detail->product_id,
+                        "qty"        => $detail->qty,
+                        "notes"      => $detail->note
+                    ]);
+
+                    if(!$usageDetail){
+                        DB::rollback();
+                        return handleErrorResponse($request, "Opps, error crated material usage detail", 'inventory/material-usage', 404, null);
+                    }
+
+                    $getStatusStockType = findAllStatusGeneral(["type"=>"stock_type_id","name"=>"OUT"]);
+                    $stockLog = productStock($this->type_transaction_id, $usage->id, $request->warehouse_id, null, $getStatusStockType->id, $detail->product_id, $detail->qty);
+                    if(!$stockLog){
+                        DB::rollback();
+                        return handleErrorResponse($request, "Opps, error product stock log", 'inventory/material-usage', 404, null);
+                    }
                 }
             }
         } catch (Exception $e) {
             DB::rollback();
-            return handleErrorResponse($request, $e->getMessage(), 'master/product', 404, null);
+            return handleErrorResponse($request, $e->getMessage(), 'inventory/material-usage', 404, null);
         }
 
         DB::commit();
@@ -162,7 +177,7 @@ class MaterialUsageController extends Controller
         }
         else{
             Session::put('success','Data successfuly created.');
-            return redirect()->to('master/product');
+            return redirect()->to('inventory/material-usage');
         }
     }
 

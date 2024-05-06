@@ -7,7 +7,7 @@
 
                 <div class="card">
                     <h5 class="card-header border-bottom mb-3">{{ $title }}</h5>
-                    <form id="form" action="{{ url('purchasing/material-request/store') }}" method="POST"
+                    <form id="form" action="{{ url('inventory/material-usage/store') }}" method="POST"
                         enctype="multipart/form-data">
                         @csrf
                         <div class="card-body row g-3">
@@ -16,40 +16,41 @@
                                     <label class="form-label" for="code">No. Document</label>
                                     <input type="text" class="form-control" id="code" name="code" value="{{ $document_number }}" readonly>
                                 </div>
-                                <div class="col">
-                                    <label class="form-label" for="date">Date Document</label>
-                                    <input type="text" class="form-control" id="date" name="date"
-                                        value="{{ date('d-m-Y') }}" disabled>
+                                <div class="col mb-3">
+                                    <label class="form-label" for="usage_date">Usage Date</label>
+                                    <input type="date" class="form-control" id="usage_date" data-allow-clear="true" name="usage_date">
                                 </div>
                             </div>
                             <div class="row mb-3">
                                 <div class="col">
                                     <label class="form-label" for="department_id">Department</label>
-                                    <select class="form-select select2" id="department_id" data-allow-clear="true" required>
+                                    <select class="form-select select2" id="department_id" data-allow-clear="true" required disabled>
                                         <option value="">Select Value</option>
                                     </select>
                                 </div>
                                 <div class="col">
                                     <label class="form-label" for="division_id">Divisi</label>
-                                    <select class="form-select select2" id="division_id" name="division_id" data-allow-clear="true" required>
+                                    <select class="form-select select2" id="division_id" name="division_id" data-allow-clear="true" required disabled>
                                         <option value="">Select Value</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="row mb-3">
-                                <div class="col mb-3">
-                                    <label class="form-label" for="request_date">Usage Date</label>
-                                    <input type="date" class="form-control" id="request_date" name="request_date">
-                                </div>
                                 <div class="col mb-3">
                                     <label class="form-label" for="warehouse_id">Warehouse</label>
                                     <select class="form-select select2" id="warehouse_id" name="warehouse_id" data-allow-clear="true" required>
                                         <option value="">Select Value</option>
                                     </select>
                                 </div>
+                                <div class="col mb-3">
+                                    <label class="form-label" for="status_id">Status</label>
+                                    <select class="form-select select2" id="status_id" name="status_id" data-allow-clear="true" required>
+                                        <option value="1" selected>Submit</option>
+                                    </select>
+                                </div>
                                 <div class="col-md-12">
-                                    <label class="form-label" for="product_category_id">Note</label>
-                                    <textarea class="form-control" id="description" name="description" rows="1"></textarea>
+                                    <label class="form-label" for="description">Note</label>
+                                    <textarea class="form-control" id="description" name="description" data-allow-clear="true" rows="1"></textarea>
                                 </div>
                             </div>
 
@@ -66,7 +67,6 @@
                                     <thead>
                                         <th>Material Req.</th>
                                         <th>Date Req.</th>
-                                        <th>Product Cat.</th>
                                         <th>Product</th>
                                         <th>Unit</th>
                                         <th style="width: 12%">Qty</th>
@@ -83,7 +83,7 @@
                             </div>
                         </div>
                         <div class="card-footer border-top py-3">
-                            <a href="{{ url('purchasing/material-usage') }}" class="btn btn-secondary btn-sm">Cancel</a>
+                            <a href="{{ url('inventory/material-usage') }}" class="btn btn-secondary btn-sm">Cancel</a>
                             <button type="submit" name="submitButton" class="btn btn-primary btn-sm">Submit</button>
                         </div>
                     </form>
@@ -99,24 +99,13 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="row mb-2">
-                        <div class="col-md-3">
-                            <label for="" class="form-label">Product Category</label>
-                            <select class="form-select select2" data-allow-clear="true" id="modalProductCategory" placeholder="All Products" required>
-                                <option value="">All Product</option>
-                            </select>
-                        </div>
-                    </div>
                     <div class="col">
                         <div class="card-datatable table-responsive">
                             <table class="datatables table border-top" id="modalProduct" style="font-size: 10pt">
                                 <thead>
                                     <tr>
-                                        <th>Material Req.</th>
-                                        <th>Product</th>
-                                        <th>Unit</th>
-                                        <th style="width: 20%">Qty</th>
-                                        <th style="width: 20%">Stock</th>
+                                        <th>Code</th>
+                                        <th>Request Date</th>
                                         <th style="width: 20%">Actions</th>
                                     </tr>
                                 </thead>
@@ -130,19 +119,10 @@
 
     <script type="text/javascript">
         // Setup Datatable
-        var ajaxUrl  = "{{ url('master/product/dataTables') }}";
+        var ajaxUrl  = "{{ url('inventory/material-request/dataTables') }}";
         var ajaxData = [];
-        var columns  = [{ data: 'sku' }, { data: 'name' }, {data: 'product_unit.name'}, { data: 'qty' }, { data: 'action' }];
+        var columns  = [{ data: 'code' }, { data: 'request_date' }, { data: 'action' }];
         var columnDefs  =  [
-            {
-                // Qty
-                targets: -2,
-                render: function(data, type, full, meta) {
-                    var status = '<input type="number" min="1" class="form-control form-control-sm" id="modalQty" name="modalQty"/>';
-
-                    return (status);
-                }
-            },
             {
                 // Actions
                 targets: -1,
@@ -160,23 +140,23 @@
     
         $(document).ready(function() {
             requestSelectAjax({
-                'url' : '{{ url('setting/general/select?type=product_category_id') }}',
+                'url' : '{{ url("master/warehouse/select") }}',
                 'data': [],
-                'optionType' : 'product_category',
+                'optionType' : 'warehouse',
                 'type': 'GET'
             });
-            requestSelectAjax({
-                'url' : '{{ url('master/department/select') }}',
-                'data': [],
-                'optionType' : 'department',
-                'type': 'GET'
-            });
-            requestSelectAjax({
-                'url' : '{{ url('master/division/select') }}',
-                'data': [],
-                'optionType' : 'division',
-                'type': 'GET'
-            });
+            // requestSelectAjax({
+            //     'url' : '{{ url('master/department/select') }}',
+            //     'data': [],
+            //     'optionType' : 'department',
+            //     'type': 'GET'
+            // });
+            // requestSelectAjax({
+            //     'url' : '{{ url('master/division/select') }}',
+            //     'data': [],
+            //     'optionType' : 'division',
+            //     'type': 'GET'
+            // });
 
             $('#showModal').click(function() {
                 // Setup Datatable
@@ -211,12 +191,8 @@
 
         function setDataSelect(optionType, response) {
             var id = "";
-            if (optionType == 'product_category') {
-                id = "#modalProductCategory";
-            } else if (optionType == 'product') {
-                id = "#unit_id";
-            } else if (optionType == 'machine') {
-                id = "#machine_id";
+            if (optionType == 'warehouse') {
+                id = "#warehouse_id";
             }
 
             $.each(response.results, function(index, data) {
@@ -225,32 +201,53 @@
         }
 
         function handleAddModalProduct(param){
-            var tempAccess = param["data"]['id']
-            var e = 0;
-            $('#listMaterialDetail tbody tr').each(function(){
-                if($(this).attr('id') == tempAccess){
-                    e++;
-                }
-            });
+            var detail = param['data']['material_request_details'];
 
-            if(e > 0){
-                toasMassage({status:false, message:'Opps, product already exist!'});
-                return false;
-            }
-            else{
-                var html = '<tr id="'+tempAccess+'">'+
-                        '<input type="hidden" name="product_id[]" value="'+tempAccess+'">'+
-                        '<td style="text-transform: capitalize">'+param["data"]["product_category"]["name"]+'</td>'+
-                        '<td style="text-transform: capitalize">'+param["data"]["name"]+'</td>'+
-                        '<td style="text-transform: capitalize">'+param["data"]["description"]+'</td>'+
-                        '<td style="text-transform: capitalize">'+param["data"]["product_unit"]["name"]+'</td>'+
-                        '<td style="text-transform: capitalize"><input type="number"class="form-control" name="product_qty[]" value="'+param["qty"]+'"></td>'+
-                        '<td style="text-transform: capitalize"><input type="text" class="form-control" name="product_note[]"/></td>'+
-                        '<td><button type="button" class="btn btn-danger btn-sm deleteList"><i class="fa fa-trash"></i></button></td>'+
-                    '<tr>';
+            for(var i = 0; i < detail.length; i++){
+                var html = '<tr id=>'+
+                    '<input type="hidden" name="material_usage['+i+'][material_request_id]" value="'+param["data"]["id"]+'">'+
+                    '<input type="hidden" name="material_usage['+i+'][material_request_detail_id]" value="'+detail[i]["id"]+'">'+
+                    '<input type="hidden" name="material_usage['+i+'][product_id]" value="'+detail[i]["product_id"]+'">'+
+                    '<input type="hidden" name="material_usage['+i+'][qty]" value="'+detail[i]["qty"]+'">'+
+                    '<td style="text-transform: capitalize">'+param["data"]["code"]+'</td>'+
+                    '<td style="text-transform: capitalize">'+param["data"]["request_date"]+'</td>'+
+                    '<td style="text-transform: capitalize">'+detail[i]["product"]["name"]+'</td>'+
+                    '<td style="text-transform: capitalize">'+detail[i]["product"]["product_unit"]["name"]+'</td>'+
+                    '<td style="text-transform: capitalize">'+detail[i]["qty"]+'</td>'+
+                    '<td style="text-transform: capitalize">'+detail[i]["notes"]+'</td>'+
+                    '<td><button type="button" class="btn btn-danger btn-sm deleteList"><i class="fa fa-trash"></i></button></td>'+
+                '</tr>';
 
                 $("#listMaterialDetail tbody").append(html);
             }
+            // console.log(detail);
+            // return false;
+            // var tempAccess = param["data"]['id']
+            // var e = 0;
+            // $('#listMaterialDetail tbody tr').each(function(){
+            //     if($(this).attr('id') == tempAccess){
+            //         e++;
+            //     }
+            // });
+
+            // if(e > 0){
+            //     toasMassage({status:false, message:'Opps, product already exist!'});
+            //     return false;
+            // }
+            // else{
+            //     var html = '<tr id="'+tempAccess+'">'+
+            //             '<input type="hidden" name="product_id[]" value="'+tempAccess+'">'+
+            //             '<td style="text-transform: capitalize">'+param["data"]["product_category"]["name"]+'</td>'+
+            //             '<td style="text-transform: capitalize">'+param["data"]["name"]+'</td>'+
+            //             '<td style="text-transform: capitalize">'+param["data"]["description"]+'</td>'+
+            //             '<td style="text-transform: capitalize">'+param["data"]["product_unit"]["name"]+'</td>'+
+            //             '<td style="text-transform: capitalize"><input type="number"class="form-control" name="product_qty[]" value="'+param["qty"]+'"></td>'+
+            //             '<td style="text-transform: capitalize"><input type="text" class="form-control" name="product_note[]"/></td>'+
+            //             '<td><button type="button" class="btn btn-danger btn-sm deleteList"><i class="fa fa-trash"></i></button></td>'+
+            //         '<tr>';
+
+            //     $("#listMaterialDetail tbody").append(html);
+            // }
 
         }
     </script>

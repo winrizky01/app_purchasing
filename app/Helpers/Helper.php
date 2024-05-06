@@ -135,6 +135,7 @@ function transactionHistoryRevision($transactionType, $transaction_id){
                 'remark_id'                 => $materialRequest->remark_id,
                 'document_photo'            => $materialRequest->document_photo,
                 'document_pdf'              => $materialRequest->document_pdf,
+                "last_reason"               => $materialRequest->last_reason,
                 "revisied_at"               => date("Y-m-d H:i:s"),
                 "revisied_by"               => auth()->user()->id,
             ]);
@@ -227,5 +228,12 @@ function pageControl($request){
         return false;
     }
 }
+
+/**
+ * change status closed if
+ * transaction has been
+ * processed  
+ */
+function closingTransaction($transactionType, $transaction_id, $old_transaction_id){}
 
 function accessControl(){}

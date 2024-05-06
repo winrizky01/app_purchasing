@@ -150,7 +150,8 @@
                         if (
                             (full['document_status']['name'] == 'Waiting Approval Tech Support')||
                             (full['document_status']['name'] == 'Waiting Approval Plant Manager'||
-                            (full['document_status']['name'] == 'Draft')
+                            (full['document_status']['name'] == 'Draft') ||
+                            (full['document_status']['name'] == 'Revisied Plant Manager')
                         )) {
                             cls = 'bg-label-warning';
                         }
@@ -179,6 +180,9 @@
                     }
                     else if(role == "Tech Support"){
                         if(full.document_status.name == "Waiting Approval Tech Support"){
+                            action += '<a href="{{ url("inventory/material-request/edit") }}/' + full.id +'" class="text-body edit-record"><i class="ti ti-edit ti-sm me-2"></i></a>';
+                        }
+                        else if(full.document_status.name == "Revisied Plant Manager"){
                             action += '<a href="{{ url("inventory/material-request/edit") }}/' + full.id +'" class="text-body edit-record"><i class="ti ti-edit ti-sm me-2"></i></a>';
                         }
                         else{

@@ -38,20 +38,20 @@ class MaterialRequestController extends Controller
 
     public function select(Request $request)
     {
-        $query = Product::select(["id", "name", "name as text"]);
-        if($request->product_category_id != ""){
-            $query = $query->where("product_category_id",$request->product_category_id);
-        }
-        $query = $query->get();
+        // $query = Product::select(["id", "name", "name as text"]);
+        // if($request->product_category_id != ""){
+        //     $query = $query->where("product_category_id",$request->product_category_id);
+        // }
+        // $query = $query->get();
 
-        if($request->expectsJson() || $request->ajax()){
-            return response()->json([
-                'status' => true,
-                'message'=> "Product successfuly access",
-                'code'   => 200,
-                'results'=> $query
-            ], 200);
-        }
+        // if($request->expectsJson() || $request->ajax()){
+        //     return response()->json([
+        //         'status' => true,
+        //         'message'=> "Product successfuly access",
+        //         'code'   => 200,
+        //         'results'=> $query
+        //     ], 200);
+        // }
     }
 
     public function index(Request $request)
@@ -267,12 +267,12 @@ class MaterialRequestController extends Controller
                 return handleErrorResponse($request, 'Opps, sorry you dont have access!', 'inventory/material-request', 404, null);
             }    
         }
-        else if(($getDocumentStatus == "Waiting Approval Tech Support")||($getDocumentStatus == "Revisied From Plant Manager")){
+        else if(($getDocumentStatus == "Waiting Approval Tech Support")||($getDocumentStatus == "Revisied Plant Manager")){
             if($check_role !== "Tech Support"){
                 return handleErrorResponse($request, 'Opps, sorry you dont have access!', 'inventory/material-request', 404, null);
             }    
         }
-        else if($getDocumentStatus == "Waiting Approval Plant Manager"){            
+        else if($getDocumentStatus == "Waiting Approval Plant Manager"){
             if($check_role !== "Plant Manager"){
                 return handleErrorResponse($request, 'Opps, sorry you dont have access!', 'inventory/material-request', 404, null);
             }    
@@ -428,7 +428,7 @@ class MaterialRequestController extends Controller
             $materialRequest->document_status_id    = $newDocumentStatus->id;
             $materialRequest->updated_at            = date("Y-m-d H:i:s");
             $materialRequest->updated_by            = auth()->user()->id;
-            $materialRequest->last_reason           = null;
+            // $materialRequest->last_reason           = null;
             $materialRequest->revision              = $revision;
             $materialRequest->save();
 
@@ -607,16 +607,22 @@ class MaterialRequestController extends Controller
                 "created_at"    => date("Y-m-d H:i:s"),
                 "created_by"    => auth()->user()->id,
             ]);
+            if(!$revision){
+                DB::rollback();
+                return handleErrorResponse($request, "Opps, error created material request revision data", 'inventory/material-request', 404, null);
+            }
 
-            $approval = approvalTransaction($this->type_transaction_id, $materialRequest->id, $newDocumentStatus->id);
+            $approval = approvalTransaction($this->type_transaction_id, $materialRequest->id, $getDocumentStatus);
             if($approval == false){
                 DB::rollback();
                 return handleErrorResponse($request, "Opps, error approval data", 'inventory/material-request', 404, null);
             }
         } catch (Exception $e) {
             DB::rollBack();
-            return handleErrorResponse($request, 'Opps, data failed to revision.', 'inventory/material-request', 404, null);
+            return handleErrorResponse($request, $e->getMessage(), 'inventory/material-request', 404, null);
         }
+
+        DB::commit();
 
         if($request->expectsJson()){
             return response()->json([
@@ -689,7 +695,14 @@ class MaterialRequestController extends Controller
             $where[] = ['material_requests.document_status_id', $request->status];
         }
 
-        $data = MaterialRequest::with(['department','document_status'])->where($where)->get();
+        $data = MaterialRequest::with([
+            'material_request_details',
+            'material_request_details.product',
+            'material_request_details.product.product_category',
+            'material_request_details.product.product_unit',
+            'department',
+            'division',
+            'document_status'])->where($where)->get();
 
         return datatables()->of($data)->toJson();
     }

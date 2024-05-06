@@ -86,10 +86,10 @@
                 Route::get('/select', [App\Http\Controllers\MaterialUsageController::class, 'select']);
                 Route::get('/print/{id}', [App\Http\Controllers\MaterialUsageController::class, 'print']);
 
-                Route::post('/store', [App\Http\Controllers\MaterialRequestController::class, 'store']);
-                Route::post('/update/{id}', [App\Http\Controllers\MaterialRequestController::class, 'update']);
+                Route::post('/store', [App\Http\Controllers\MaterialUsageController::class, 'store']);
+                Route::post('/update/{id}', [App\Http\Controllers\MaterialUsageController::class, 'update']);
 
-                Route::delete('/delete/{id}', [App\Http\Controllers\MaterialRequestController::class, 'destroy']);
+                Route::delete('/delete/{id}', [App\Http\Controllers\MaterialUsageController::class, 'destroy']);
             });
 
             Route::prefix('material-receipt')->group(function(){
