@@ -11,7 +11,7 @@
                             <img src="{{ asset('template/assets/img/meepo.png') }}" class="img-fluid" />
                         </div>
                         <!-- /Logo -->
-                        <h4 class="mb-1 pt-2">Welcome to Meepo Aps! 👋</h4>
+                        <h4 class="mb-1 pt-2">Welcome to Meppo Aps! 👋</h4>
                         <p class="mb-4">Please sign-in to your account</p>
                         @if ($errors->any())
                             @foreach ($errors->all() as $error)

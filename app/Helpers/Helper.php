@@ -11,6 +11,10 @@ use App\Models\MRHistory;
 use App\Models\MRDHistory;
 
 use App\Models\AdjustmentStock;
+
+use App\Models\MaterialUsage;
+use App\Models\MaterialUsageDetail;
+
 use App\Models\Division;
 use App\Models\Approval;
 use App\Models\Product;
@@ -36,6 +40,16 @@ function generateCodeDocument($transactionType, $division=false){
     else if($transactionType == "ADJ"){
         $last_document  = AdjustmentStock::where("date","LIKE","%".date("Y-m")."%");
     }
+    else if($transactionType == "USG"){
+        // "USG/MEPPO/ECI/XII/".date("Y");
+        $last_document  = MaterialUsage::where("usage_date","LIKE","%".date("Y-m")."%");
+        $division_name  = "MEPPO/ECI";
+    }
+    else if($transactionType == "GR"){
+        $last_document  = MaterialUsage::where("usage_date","LIKE","%".date("Y-m")."%");
+        $division_name  = "MEPPO/ECI";
+    }
+
     $last_document = $last_document->orderBy("id", "DESC")->first();
 
     $last_code = "000";
@@ -209,6 +223,63 @@ function productStock($transactionType, $transaction_id, $warehouse_id, $section
     }
 
     return true;
+}
+
+/**
+ * option_warehouse (
+ * global => stok keseleruhunan (default query)
+ * general=> stok yang bisa digunakan
+ * extra-countable => stok yang belum tentu bisa digunakan
+ * ) -> parsing paramater ini secara hardcode karena
+ * pada dasarnya sudah default di master warehouse
+ */
+function checkStock($warehouse_id, $product_id, $option_warehouse=false){
+    $start_date = date("Y-m-01");
+    $end_date   = date("Y-m-d");
+    $periode    = date("Y-m");
+
+    $query = DB::table('products as p')
+                ->select(
+                    'p.id as product_id', 
+                    'p.name as product_name',
+                    DB::raw('(COALESCE(SUM(cs.closing_quantity), 0) + 
+                        COALESCE(SUM(CASE WHEN ts.stock_type_name = "IN" THEN ts.qty ELSE 0 END), 0) - 
+                        COALESCE(SUM(CASE WHEN ts.stock_type_name = "OUT" THEN ts.qty ELSE 0 END), 0)
+                    ) AS final_stock')
+                )
+                ->leftJoin('product_stocks as ts', function($j) use ($start_date, $end_date, $warehouse_id){
+                    // global stok
+                    $j->on('p.id', '=', 'ts.product_id')
+                        ->whereBetween('ts.date',[$start_date, $end_date]);
+                    // global stok
+
+                    if($warehouse_id != ""){
+                        $j->where("ts.warehouse_id", $warehouse_id);
+                    }
+
+                    if($option_warehouse != false){
+                        $j->where("ts.warehouse_type", $option_warehouse);
+                    }
+                })
+                ->leftJoin('closing_stocks as cs', function($j) use ($periode, $warehouse_id){
+                    // global stok
+                    $j->on('p.id', '=', 'cs.product_id')
+                        ->where('cs.period', '=', $periode);
+                    // global stok
+
+                    if($warehouse_id != ""){
+                        $j->where("cs.warehouse_id", $warehouse_id);
+                    }
+
+                    if($option_warehouse != false){
+                        $j->where("cs.warehouse_type", $option_warehouse);
+                    }
+                })
+                ->where("p.id", $product_id)
+                ->groupBy('p.id','p.name')
+                ->get();
+
+    return $query;
 }
 
 function pageControl($request){

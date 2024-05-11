@@ -53,7 +53,7 @@
             </div>             
         </div>
         
-        <!-- Material List Table -->
+        <!-- Product List Table -->
         <div class="card">
             <div class="card-header border-bottom">
                 <h5 class="card-title mb-1">{{ $title }}</h5>
@@ -70,7 +70,6 @@
                             <th>Request Date</th>
                             <th>No. Document</th>
                             <th>Department</th>
-                            <th>Revision</th>
                             <th>Status</th>
                             <th>Actions</th>
                         </tr>
@@ -112,9 +111,9 @@
     <script type="text/javascript">
         // Setup Datatable
         var role     = "{{session('role')->name}}";
-        var ajaxUrl  = "{{ url('inventory/material-request/dataTables') }}";
+        var ajaxUrl  = "{{ url('inventory/adjustment-stock/dataTables') }}";
         var ajaxData = [];
-        var columns  = [{ data: 'request_date' }, { data: 'code' }, {data: 'department.name'}, {data: 'revision'}, { data: 'status' }, { data: 'action' }];
+        var columns  = [{ data: 'date' }, { data: 'code' }, {data: 'department.name'}, { data: 'status' }, { data: 'action' }];
         var columnDefs  =  [
             {
                 // Convert date
@@ -129,17 +128,6 @@
                 }
             },
             {
-                // Check History
-                targets: -3,
-                render: function(data, type, full, meta) {
-                    var a = 0;
-                    if(data > 0){
-                        a = '<a href="{{ url("inventory/material-request/history") }}/' + full.id + '" class="text-warning" style="text-decoration:underline">'+ data +'</a>';
-                    }
-                    return a;
-                }
-            },
-            {
                 // User Status
                 targets: -2,
                 render: function(data, type, full, meta) {
@@ -150,20 +138,14 @@
                         if (
                             (full['document_status']['name'] == 'Waiting Approval Tech Support')||
                             (full['document_status']['name'] == 'Waiting Approval Plant Manager'||
-                            (full['document_status']['name'] == 'Draft') ||
-                            (full['document_status']['name'] == 'Revisied Plant Manager')
+                            (full['document_status']['name'] == 'Draft')
                         )) {
                             cls = 'bg-label-warning';
                         }
                         else if (full['document_status']['name'] == 'Approved Plant Manager') {
                             cls = 'bg-label-success';
                         }
-                        else if (
-                            (full['document_status']['name'] == 'Rejected Tech Support')||
-                            (full['document_status']['name'] == 'Rejected Plant Manager')||
-                            (full['document_status']['name'] == 'Processed')||
-                            (full['document_status']['name'] == 'Closed')
-                        ) {
+                        else if ((full['document_status']['name'] == 'Rejected Tech Support')||(full['document_status']['name'] == 'Rejected Plant Manager')) {
                             cls = 'bg-label-danger';
                         }
                     }
@@ -187,15 +169,12 @@
                         if(full.document_status.name == "Waiting Approval Tech Support"){
                             action += '<a href="{{ url("inventory/material-request/edit") }}/' + full.id +'" class="text-body edit-record"><i class="ti ti-edit ti-sm me-2"></i></a>';
                         }
-                        else if(full.document_status.name == "Revisied Plant Manager"){
-                            action += '<a href="{{ url("inventory/material-request/edit") }}/' + full.id +'" class="text-body edit-record"><i class="ti ti-edit ti-sm me-2"></i></a>';
-                        }
                         else{
                             action += '<a href="{{ url("inventory/material-request/show") }}/' + full.id + '" class="text-body"><i class="ti ti-eye ti-sm mx-2"></i></a>';
                         }
                     }
-                    else if(role == "Plant Manager"){
-                        if(full.document_status.name == "Waiting Approval Plant Manager"){
+                    else if(role == "Plan Manager"){
+                        if(full.document_status.name == "Waiting Approval Plan Manager"){
                             action += '<a href="{{ url("inventory/material-request/edit") }}/' + full.id + '" class="text-body edit-record"><i class="ti ti-edit ti-sm me-2"></i></a>';
                         }
                         else{
@@ -203,7 +182,7 @@
                         }
                     }
                     else{
-                        action += '<a href="{{ url("inventory/material-request/show") }}/' + full.id + '" class="text-body"><i class="ti ti-eye ti-sm mx-2"></i></a>';
+                        action += '<a href="{{ url("inventory/material-request/edit") }}/' + full.id + '" class="text-body edit-record"><i class="ti ti-edit ti-sm me-2"></i></a>';
                     }
 
                     action += '<button type="button" class="btn btn-icon waves-effect download-record"><i class="ti ti-printer ti-sm me-2"></i></button> </div>';
@@ -215,9 +194,9 @@
         var buttons     =  [
             {
                 className: 'btn btn-primary mx-3 btn-sm',
-                text: 'Add Material Request',
+                text: 'Add Good Receipt',
                 action: function() {
-                    window.location.href = '{{url("inventory/material-request/create")}}'; // Ganti URL_ANDA_DISINI dengan URL yang diinginkan
+                    window.location.href = '{{url("purchasing/good-receipt/create")}}'; // Ganti URL_ANDA_DISINI dengan URL yang diinginkan
                 }
             }, 
         ]
@@ -319,6 +298,7 @@
 
         function handleRequestAjax(option, data){
             if(option == "pdf"){
+                console.log(data);
                 window.open(data.url, '_blank');
             }
         }

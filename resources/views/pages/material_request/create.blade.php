@@ -224,6 +224,7 @@
                 }
 
                 if(modalQty > qtyOnHand){
+                    selectedRow.find("#modalQty").val(qtyOnHand);
                     toasMassage({status:false, message:'Opps, insufficient stock!'});
                     return false;
                 }
@@ -242,6 +243,15 @@
             });
 
             $('form').submit(function(e){
+                var count = 0;
+                $('#listMaterialDetail tbody tr').each(function(){
+                    count++;
+                });
+
+                if(count == 0){
+                    toasMassage({status:false, message:'Opps, please fill material request detail!'});
+                    e.preventDefault();
+                }
             });
         })
 
@@ -284,7 +294,7 @@
                         '<td style="text-transform: capitalize">'+param["data"]["name"]+'</td>'+
                         '<td style="text-transform: capitalize">'+param["data"]["description"]+'</td>'+
                         '<td style="text-transform: capitalize">'+param["data"]["product_unit"]["name"]+'</td>'+
-                        '<td style="text-transform: capitalize"><input type="number"class="form-control" name="material_request_details['+index+'][product_qty]" value="'+param["qty"]+'"></td>'+
+                        '<td style="text-transform: capitalize"><input type="number"class="form-control detailQtyChange" name="material_request_details['+index+'][product_qty]" max="'+param["qty"]+'" min="1" value="'+param["qty"]+'"></td>'+
                         '<td style="text-transform: capitalize"><input type="text" class="form-control" name="material_request_details['+index+'][product_note]"/></td>'+
                         '<td><button type="button" class="btn btn-danger btn-sm deleteList"><i class="fa fa-trash"></i></button></td>'+
                     '<tr>';

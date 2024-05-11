@@ -32,15 +32,14 @@
             <div class="card-body">
                 <div class="row pb-2 gap-3 gap-md-0">
                     <div class="col-md-4">
-                        <label for="filterName">Name</label>
-                        <input type="text" class="form-control" name="filterName" id="filterName" placeholder="Enter Name">
+                        <label for="filterCode">No. Document</label>
+                        <input type="text" class="form-control" name="filterCode" id="filterCode" placeholder="Enter No. Document">
                     </div>
                     <div class="col-md-4">
                         <label for="filterstatus">Status</label>
                         <select class="select2 form-control" name="filterstatus" id="filterstatus">
                             <option value="">Select Status</option>
-                            <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>
+                            <option value="1">Submit</option>
                         </select>
                     </div>
                 </div>
@@ -65,9 +64,10 @@
                 <table class="datatables table border-top">
                     <thead>
                         <tr>
-                            <th>SKU</th>
-                            <th>Name</th>
-                            <th>Unit</th>
+                            <th>Date</th>
+                            <th>No. Document</th>
+                            <th>Warehouse</th>
+                            <th>Note</th>
                             <th>Status</th>
                             <th>Actions</th>
                         </tr>
@@ -108,24 +108,34 @@
 
     <script type="text/javascript">
         // Setup Datatable
-        var ajaxUrl  = "{{ url('master/product/dataTables') }}";
+        var ajaxUrl  = "{{ url('inventory/material-usage/dataTables') }}";
         var ajaxData = [];
-        var columns  = [{ data: 'sku' }, { data: 'name' }, {data: 'product_unit.name'}, { data: 'status' }, { data: 'action' }];
+        var columns  = [{ data: 'usage_date' }, {data: 'code'}, {data: 'warehouse.name'}, {data: 'description'}, { data: 'document.name' }, { data: 'action' }];
         var columnDefs  =  [
+            {
+                // Convert date
+                targets: 0,
+                render: function(data, type, full, meta) {
+                    var parts = data.split('-');
+                    var formattedDay = ('0' + parts[0]).slice(-2);
+                    var formattedMonth = ('0' + parts[1]).slice(-2);
+                    var formattedYear = parts[2];
+                    var formattedDate = formattedDay + '-' + formattedMonth + '-' + formattedYear;
+                    return formattedDate;
+                }
+            },
             {
                 // User Status
                 targets: -2,
                 render: function(data, type, full, meta) {
+                    console.log(full.document_status.name)
                     var status = '';
-                    if ((full['status'] == 1) || (full['status'] == 'active')) {
+                    if ((full.document_status.name == 'Submit')) {
                         status =
-                            '<span class="badge bg-label-success" text-capitalized> Active </span>';
-                    } else if ((full['status'] == 2) || (full['status'] == 'inactive')) {
+                            '<span class="badge bg-label-success" text-capitalized> Submit </span>';
+                    } else if ((full.document_status.name == 'Draft')) {
                         status =
-                            '<span class="badge bg-label-secondary" text-capitalized> Inactive </span>';
-                    } else if ((full['status'] == 3) || (full['status'] == 'pending')) {
-                        status =
-                            '<span class="badge bg-label-warning" text-capitalized> Pending </span>';
+                            '<span class="badge bg-label-secondary" text-capitalized> Draft </span>';
                     }
 
                     return (status);
@@ -140,9 +150,8 @@
                 render: function(data, type, full, meta) {
                     return (
                         '<div class="d-flex align-items-center">' +
-                            '<a href="{{ url("inventory/material-request/edit") }}/' + full.id +
-                            '" class="text-body edit-record"><i class="ti ti-edit ti-sm me-2"></i></a>' +
-                            '<a href="javascript:;" class="text-body delete-record"><i class="ti ti-trash ti-sm mx-2"></i></a>' +
+                            '<a href="{{ url("inventory/material-usage/show") }}/' + full.id +
+                            '" class="text-body edit-record"><i class="ti ti-eye ti-sm me-2"></i></a>' +
                         '</div>'
                     );
                 }
@@ -166,32 +175,32 @@
             $('.datatables tbody').on('click', '.delete-record', function() {
                 var selectedRow = $(this).closest('tr');
                 var rowData = $('.datatables').DataTable().row(selectedRow).data();
-                $('#confirmDelete').attr('action', '{{url("master/product/delete")}}/'+rowData.id);
+                $('#confirmDelete').attr('action', '{{url("inventory/material_usage/delete")}}/'+rowData.id);
                 $('#modalCenter').modal('toggle');
             });
 
             $('#handleReset').click(function() {
-                $('#filterName').val('');
+                $('#filterCode').val('');
                 $('#filterstatus').val('').trigger('change');
                 ajaxData = {};
                 initializeDataTable(ajaxUrl, ajaxData, columns, columnDefs, buttons);
             });
             $('#handleFilter').click(function(){
-                var name = "";
-                var status = "";
-                if($('#filterName').val() != ""){
-                    name = $('#filterName').val();
+                var code    = "";
+                var status  = "";
+                if($('#filterCode').val() != ""){
+                    code = $('#filterCode').val();
                 }
                 if($('#filterstatus').val() != ""){
                     status = $('#filterstatus').val();
                 }
 
-                if((name == "")&&(status == "")){
+                if((code == "")&&(status == "")){
                     toasMassage({status:false, message:'Opps, please fill out some form!'});
                     return false;
                 }
 
-                ajaxData = {'name':name, 'status': status};
+                ajaxData = {'code':code, 'status': status};
                 initializeDataTable(ajaxUrl, ajaxData, columns, columnDefs, buttons);
             });
 

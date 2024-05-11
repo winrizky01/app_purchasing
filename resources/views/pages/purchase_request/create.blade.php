@@ -42,7 +42,7 @@
                                     </select>
                                 </div>
                                 <div class="col">
-                                    <label class="form-label" for="product_category_id">Date Document</label>
+                                    <label class="form-label" for="product_category_id">Request Date</label>
                                     <input type="text" class="form-control" id="sku" name="sku"
                                         value="{{ date('d-m-Y') }}" disabled>
                                 </div>
@@ -53,42 +53,48 @@
                                     <input type="text" class="form-control" id="document_number" name="document_number" value="{{ $document_number }}" readonly>
                                 </div>
                                 <div class="col">
-                                    <label class="form-label" for="product_category_id">Request Date</label>
+                                    <label class="form-label" for="product_category_id">Estimation Required</label>
                                     <input type="date" class="form-control" id="sku" name="sku">
                                 </div>
                             </div>
                             <div class="row mb-3">
                                 <div class="col">
-                                    <div class="row">
-                                        <div class="col-md-12 mb-3">
-                                            <label class="form-label" for="product_category_id">Department</label>
-                                            <select class="form-select select2" data-allow-clear="true" required>
-                                                <option value="">Select Value</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-12 mb-3">
-                                            <label class="form-label" for="product_category_id">Justification</label>
-                                            <textarea class="form-control" id="description" name="description" rows="1"></textarea>
-                                        </div>
-                                    </div>
+                                    <label class="form-label" for="product_category_id">Department</label>
+                                    <select class="form-select select2" data-allow-clear="true" required>
+                                        <option value="">Select Value</option>
+                                    </select>
                                 </div>
                                 <div class="col">
-                                    <div class="row mb-3">
-                                        <div class="col-md-12 mb-3">
-                                            <label class="form-label" for="product_category_id">Divisi</label>
-                                            <select class="form-select select2" data-allow-clear="true" required>
-                                                <option value="">Select Value</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-12 mb-3">
-                                            <label class="form-label" for="remark">Remaks</label>
-                                            <select class="form-select select2" data-allow-clear="true" required>
-                                                <option value="">Select Value</option>
-                                                <option value="normal">Normal</option>
-                                                <option value="urgent">Urgent</option>
-                                            </select>
-                                        </div>
-                                    </div>
+                                    <label class="form-label" for="product_category_id">Divisi</label>
+                                    <select class="form-select select2" data-allow-clear="true" required>
+                                        <option value="">Select Value</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col">
+                                    <label class="form-label" for="product_category_id">Warehouse</label>
+                                    <select class="form-select select2" data-allow-clear="true" required>
+                                        <option value="">Select Value</option>
+                                    </select>
+                                </div>
+                                <div class="col">
+                                    <label class="form-label" for="product_category_id">Remark</label>
+                                    <select class="form-select select2" data-allow-clear="true" required>
+                                        <option value="">Select Value</option>
+                                    </select>
+                                </div>
+                                <div class="col">
+                                    <label class="form-label" for="product_category_id">Status</label>
+                                    <select class="form-select select2" data-allow-clear="true" required>
+                                        <option value="">Select Value</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col">
+                                    <label class="form-label" for="product_category_id">Notes</label>
+                                    <textarea class="form-control" id="spesification" name="spesification" rows="3"></textarea>
                                 </div>
                             </div>
 
@@ -106,7 +112,6 @@
                                     <thead>
                                         <th>Cat.</th>
                                         <th>Product</th>
-                                        <th>Function</th>
                                         <th>Unit</th>
                                         <th style="width: 12%">Qty</th>
                                         <th>Note</th>
@@ -279,8 +284,12 @@
                 var html = '<tr id="'+tempAccess+'">'+
                         '<input type="hidden" name="product_id[]" value="'+tempAccess+'">'+
                         '<td style="text-transform: capitalize">'+param["data"]["product_category"]["name"]+'</td>'+
-                        '<td style="text-transform: capitalize">'+param["data"]["name"]+'</td>'+
-                        '<td style="text-transform: capitalize">'+param["data"]["description"]+'</td>'+
+                        '<td style="text-transform: capitalize">'+
+                            param["data"]["name"]+ ' - ' +
+                            param["data"]["description"]+ ' - ' +
+                            param["data"]["dimension"]+ ' - ' +
+                            param["data"]["part_number"]+
+                        '</td>'+
                         '<td style="text-transform: capitalize">'+param["data"]["product_unit"]["name"]+'</td>'+
                         '<td style="text-transform: capitalize"><input type="number"class="form-control" name="product_qty[]" value="'+param["qty"]+'"></td>'+
                         '<td style="text-transform: capitalize"><input type="text" class="form-control" name="product_note[]"/></td>'+

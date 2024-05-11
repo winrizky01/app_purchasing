@@ -21,21 +21,31 @@
                                     <input type="text" class="form-control" id="date" name="date"
                                         value="{{ date('d-m-Y') }}" readonly>
                                 </div>
+                            </div>
+                            <div class="row mb-3">
                                 <div class="col">
                                     <label class="form-label" for="vendor_id">Vendor</label>
                                     <select class="form-select select2" id="vendor_id" name="vendor_id" data-allow-clear="true" required>
                                         <option value="">Select Value</option>
                                     </select>
                                 </div>
+                                <div class="col">
+                                    <label class="form-label" for="vendor_id">Nomer Surat Jalan</label>
+                                    <input type="text" class="form-control" id="code" name="code">
+                                </div>
                             </div>
                             <div class="row mb-3">
-                                <div class="col">
-                                    <label class="form-label" for="warehouse_id">Warehouse</label>
-                                    <select class="form-select select2" name="warehouse_id" id="warehouse_id" data-allow-clear="true" required>
-                                        <option value="">Select Value</option>
-                                    </select>
+                                    <div class="col">
+                                    <label class="form-label" for="vendor_id">Nomer Pengiriman</label>
+                                    <input type="text" class="form-control" id="code" name="code">
                                 </div>
                                 <div class="col">
+                                    <label class="form-label" for="vendor_id">Nomer Kendaraan</label>
+                                    <input type="text" class="form-control" id="code" name="code">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
                                     <label class="form-label" for="document_status_id">Status</label>
                                     <select class="form-select select2" name="document_status_id" id="document_status_id" data-allow-clear="true" required>
                                         <option value="">Select Value</option>
@@ -53,7 +63,7 @@
                                 </div>
                             </div>
                             <div class="col-md-2">
-                                <button class="btn btn-sm btn-primary" type="button" id="showModal">GR Registration</button>
+                                <button class="btn btn-sm btn-primary" type="button" id="showModal">Purchase Order</button>
                             </div>
                             <div class="col-md-12">
                                 <table class="table" id="listMaterialDetail">

@@ -142,7 +142,7 @@
                         )) {
                             cls = 'bg-label-warning';
                         }
-                        else if (full['document_status']['name'] == 'Approved Plant Manager') {
+                        else if (full['document_status']['name'] == 'Submit') {
                             cls = 'bg-label-success';
                         }
                         else if ((full['document_status']['name'] == 'Rejected Tech Support')||(full['document_status']['name'] == 'Rejected Plant Manager')) {

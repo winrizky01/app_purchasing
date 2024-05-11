@@ -10,10 +10,6 @@ use App\Models\User;
 use App\Models\Role;
 use App\Models\General;
 use App\Models\Product;
-use App\Models\MaterialRequest;
-use App\Models\MaterialRequestDetail;
-use App\Models\MaterialRequestRevision;
-use App\Models\Approval;
 
 use DB;
 use Redirect;
@@ -23,13 +19,13 @@ use Validator;
 use File;
 use PDF;
 
-class MaterialReceiptController extends Controller
+class GoodReceiptController extends Controller
 {
     protected $type_transaction_id;
 
     public function __construct()
     {
-        $this->type_transaction_id = findAllStatusGeneral(["name"=>"REC"]);
+        $this->type_transaction_id = findAllStatusGeneral(["name"=>"GR"]);
         $this->type_transaction_id = $this->type_transaction_id->id;
     }
 
@@ -71,9 +67,9 @@ class MaterialReceiptController extends Controller
             if(!pageControl($request)){
                 return redirect('/');
             }
-            $data["title"] = "List Material Receipt";
+            $data["title"] = "List Good Receipt";
 
-            $view = "pages.material_receipt.index";
+            $view = "pages.good_receipt.index";
             return view($view, $data);
         }
     }
@@ -81,7 +77,7 @@ class MaterialReceiptController extends Controller
     public function create(Request $request){
         $check_role = Role::find(auth()->user()->role);
         if(($check_role->name !== "Superadmin")){
-            return handleErrorResponse($request, 'Opps, sorry you dont have access!', 'inventory/material-receipt', 404, null);
+            return handleErrorResponse($request, 'Opps, sorry you dont have access!', 'purchasing/good-receipt', 404, null);
         }
 
         if($request->expectsJson() || $request->ajax()){
@@ -98,9 +94,10 @@ class MaterialReceiptController extends Controller
                 return redirect('/');
             }            
 
-            $data["title"] = "Add Material Receipt";
-            $data["document_number"] = generateCodeDocument("MR",auth()->user()->division_id);
-            $view = "pages.material_receipt.create";
+            $data["title"] = "Add Good Receipt";
+            // $data["document_number"] = generateCodeDocument("GR",auth()->user()->division_id);
+            $data["document_number"] = "107/MEP/GR/XI/2023";
+            $view = "pages.good_receipt.create";
             return view($view, $data);
         }
 

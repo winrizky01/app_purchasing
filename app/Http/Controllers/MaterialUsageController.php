@@ -12,6 +12,8 @@ use App\Models\General;
 use App\Models\Role;
 use App\Models\MaterialUsage;
 use App\Models\MaterialUsageDetail;
+use App\Models\MaterialRequest;
+use App\Models\MaterialRequestDetail;
 
 use DB;
 use Redirect;
@@ -102,18 +104,16 @@ class MaterialUsageController extends Controller
         }
 
         $data["title"] = "Add Material Usage";
-        $data["document_number"] = "USG/MEPPO/ECI/XII/".date("Y");
+        $data["document_number"] = generateCodeDocument("USG",null);
         $view = "pages.material_usage.create";
         return view($view, $data);
     }
 
     public function store(Request $request)
     {
-        var_dump($request->all());die();
-
         $validator = Validator::make($request->all(),[
             'code'          => 'required',
-            'status'        => 'required',
+            'status_id'     => 'required',
             'usage_date'    => 'required',
             'warehouse_id'  => 'required'
         ]);
@@ -126,42 +126,82 @@ class MaterialUsageController extends Controller
         try {
             $usage = MaterialUsage::create([
                 'code'          => $request->code,
-                'date'          => $request->usage_date,
+                'usage_date'    => date("Y-m-d H:i:s", strtotime($request->usage_date)),
                 'department_id' => $request->department_id,
                 'division_id'   => $request->division_id,
                 'warehouse_id'  => $request->warehouse_id,
                 "description"   => $request->description,
-                "document_status_id" => $request->status,
+                "document_status_id" => $request->status_id,
                 "created_at"    => date("Y-m-d H:i:s"),
                 "created_by"    => auth()->user()->id,
             ]);
 
             if($usage){
+                $materialRequestId = 0;
                 foreach($request->material_usage_detail as $detail){
+                    if($request->expectsJson()){
+                        $material_request_id           = null;
+                        $material_request_detail_id    = null;
+                        $product_id = null;
+                        $qty        = null;
+                        $notes      = null;
+                    }
+                    else{
+                        $material_request_id           = $detail["material_request_id"];
+                        $material_request_detail_id    = $detail["material_request_detail_id"];
+                        $product_id = $detail["product_id"];
+                        $qty        = $detail["qty"];
+                        $notes      = $detail["notes"];
+                    }
+
                     $usageDetail = MaterialUsageDetail::create([
                         "material_usage_id"             => $usage->id,
-                        "material_request_id"           => $detail->material_request_id,
-                        "material_request_detail_id"    => $detail->material_request_detail_id,
-                        "product_id" => $detail->product_id,
-                        "qty"        => $detail->qty,
-                        "notes"      => $detail->note
+                        "material_request_id"           => $material_request_id,
+                        "material_request_detail_id"    => $material_request_detail_id,
+                        "product_id" => $product_id,
+                        "qty"        => $qty,
+                        "notes"      => $notes
                     ]);
-
                     if(!$usageDetail){
                         DB::rollback();
                         return handleErrorResponse($request, "Opps, error crated material usage detail", 'inventory/material-usage', 404, null);
                     }
 
                     $getStatusStockType = findAllStatusGeneral(["type"=>"stock_type_id","name"=>"OUT"]);
-                    $stockLog = productStock($this->type_transaction_id, $usage->id, $request->warehouse_id, null, $getStatusStockType->id, $detail->product_id, $detail->qty);
+                    $stockLog = productStock($this->type_transaction_id, $usage->id, $request->warehouse_id, null, $getStatusStockType->id, $product_id, $qty);
                     if(!$stockLog){
                         DB::rollback();
                         return handleErrorResponse($request, "Opps, error product stock log", 'inventory/material-usage', 404, null);
                     }
+
+                    // ubah status material request detail menjadi close 
+                    // karena sudah dipanggil / digunakan 
+                    // pada material usage detail
+                    $materialRequestId = $material_request_id;
+                    $requestDetail = MaterialRequestDetail::find($material_request_detail_id);
+                    $closedStatusDocument = findAllStatusGeneral(["name"=>"Closed"]);
+                    $requestDetail->document_status_id = $closedStatusDocument->id; // buat menjadi close karena sudah digunakan
+                    $requestDetail->save();
+
+                    if(!$requestDetail){
+                        DB::rollback();
+                        return handleErrorResponse($request, "Opps, error crated material usage detail", 'inventory/material-usage', 404, null);
+                    }
+                }
+
+                // ubah status material request menjadi process
+                $processStatusDocument = findAllStatusGeneral(["name"=>"Processed"]);
+                $materialRequest = MaterialRequest::find($materialRequestId);
+                $materialRequest->document_status_id = $processStatusDocument->id;
+                $materialRequest->save();
+                if(!$materialRequest){
+                    DB::rollback();
+                    return handleErrorResponse($request, "Opps, error created material usage detail", 'inventory/material-usage', 404, null);
                 }
             }
         } catch (Exception $e) {
             DB::rollback();
+            return $e->getMessage();
             return handleErrorResponse($request, $e->getMessage(), 'inventory/material-usage', 404, null);
         }
 
@@ -311,14 +351,14 @@ class MaterialUsageController extends Controller
     public function dataTables(Request $request)
     {
         $where = [];
-        if($request->name != ""){
-            $where[] = ["products.name", "LIKE", "%".$request->name."%"];
+        if($request->code != ""){
+            $where[] = ["material_usages.name", "LIKE", "%".$request->code."%"];
         }
         if($request->status != ""){
-            $where[] = ['products.status', $request->status];
+            $where[] = ['material_usages.status', $request->status];
         }
 
-        $data = Product::with(['product_unit'])->where($where)->get();
+        $data = MaterialUsage::with(['department', 'division', 'warehouse', 'document_status'])->where($where)->get();
         return datatables()->of($data)->toJson();
     }
 

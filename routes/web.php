@@ -41,8 +41,8 @@
                 Route::post('/update/{id}', [App\Http\Controllers\PurchaseRequestController::class, 'update']);
 
                 Route::delete('/delete/{id}', [App\Http\Controllers\PurchaseRequestController::class, 'destroy']);
-
             });
+            
             Route::prefix('purchase-order')->group(function(){
                 Route::get('/', [App\Http\Controllers\PurchaseOrderController::class, 'index']);
                 Route::get('/create', [App\Http\Controllers\PurchaseOrderController::class, 'create']);
@@ -56,6 +56,20 @@
                 Route::post('/update/{id}', [App\Http\Controllers\PurchaseOrderController::class, 'update']);
 
                 Route::delete('/delete/{id}', [App\Http\Controllers\PurchaseOrderController::class, 'destroy']);
+            });
+
+            Route::prefix('good-receipt')->group(function(){
+                Route::get('/', [App\Http\Controllers\GoodReceiptController::class, 'index']);
+                Route::get('/create', [App\Http\Controllers\GoodReceiptController::class, 'create']);
+                Route::get('/edit/{id}', [App\Http\Controllers\GoodReceiptController::class, 'edit']);
+                Route::get('/dataTables', [App\Http\Controllers\GoodReceiptController::class, 'dataTables']);
+                Route::get('/select', [App\Http\Controllers\GoodReceiptController::class, 'select']);
+                Route::get('/print/{id}', [App\Http\Controllers\GoodReceiptController::class, 'print']);
+
+                Route::post('/store', [App\Http\Controllers\GoodReceiptController::class, 'store']);
+                Route::post('/update/{id}', [App\Http\Controllers\GoodReceiptController::class, 'update']);
+
+                Route::delete('/delete/{id}', [App\Http\Controllers\GoodReceiptController::class, 'destroy']);
             });
         });
 
@@ -122,6 +136,7 @@
 
             Route::prefix('report')->group(function(){
                 Route::get('/stock-product', [App\Http\Controllers\ReportProductController::class, 'index']);
+                Route::get('/stock-product/checkStock', [App\Http\Controllers\ReportProductController::class, 'checkStock']);
                 Route::get('/stock-product/dataTables', [App\Http\Controllers\ReportProductController::class, 'dataTables']);
             });
         });

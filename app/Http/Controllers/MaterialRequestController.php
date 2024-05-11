@@ -205,6 +205,7 @@ class MaterialRequestController extends Controller
                             'product_id' => $product_id,
                             'qty'        => $qty,
                             'notes'      => $notes,
+                            'document_status_id' => 1 // default status detail before used
                         ]);
 
                         if (!$materialRequestDetail) {
@@ -433,7 +434,9 @@ class MaterialRequestController extends Controller
             $materialRequest->save();
 
             if($materialRequest){
+                // delete all 
                 $materialRequestDetail = MaterialRequestDetail::where("material_request_id", $id)->forceDelete();
+                // regenerate new
                 if ($request->material_request_details) {
                     foreach ($request->material_request_details as $key => $value) {
                         if($request->expectsJson()){
@@ -452,6 +455,7 @@ class MaterialRequestController extends Controller
                             'product_id' => $product_id,
                             'qty'        => $qty,
                             'notes'      => $notes,
+                            'document_status_id' => 1 // default status before used
                         ]);
 
                         if (!$materialRequestDetail) {

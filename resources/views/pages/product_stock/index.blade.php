@@ -67,13 +67,27 @@
         var ajaxUrl  = "{{ url('inventory/report/stock-product/dataTables') }}";
         var ajaxData = {"option":"summary"};
         var columns  = [{ data: 'product_code' }, { data: 'product_name' }, {data: 'total_stock_in'}, {data: 'total_stock_out'}, { data: 'final_stock' }];
-        var columnDefs  =  [];
+        var columnDefs  =  [
+            {
+                "targets": '_all', // Mengaplikasikan perubahan ke semua kolom dalam setiap baris
+                "render": function(data, type, row) {
+                    var stock = parseInt(row.final_stock);
+                    if (stock <= 5) {
+                        return '<span class="text-danger">' + data + '</span>';
+                    } else if (stock >= 6 && stock <= 15) {
+                        return '<span class="text-warning">' + data + '</span>';
+                    } else {
+                        return '<span class="text-success">' + data + '</span>';
+                    }
+                }
+            }
+        ];
         var buttons     =  [
             {
                 className: 'btn btn-primary mx-3 btn-sm',
-                text: 'Add Material Request',
+                text: 'Add Adjustment Stock',
                 action: function() {
-                    window.location.href = '{{url("inventory/material-request/create")}}'; // Ganti URL_ANDA_DISINI dengan URL yang diinginkan
+                    window.location.href = '{{url("inventory/adjustment-stock/create")}}'; // Ganti URL_ANDA_DISINI dengan URL yang diinginkan
                 }
             }, 
         ]

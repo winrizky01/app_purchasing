@@ -46,6 +46,7 @@
     <link rel="stylesheet" href="{{ asset('template/assets/vendor/libs/bootstrap-datepicker/bootstrap-datepicker.css') }}">
     <link rel="stylesheet" href="{{ asset('template/assets/vendor/libs/bootstrap-daterangepicker/bootstrap-daterangepicker.css') }}">
     <link rel="stylesheet" href="{{ asset('template/assets/vendor/libs/jquery-timepicker/jquery-timepicker.css') }}">
+    <link rel="stylesheet" href="{{ asset('template/assets/vendor/libs/spinkit/spinkit.css') }}" />
 
     <link rel="stylesheet"
         href="{{ asset('template/assets/vendor/libs/datatables-bs5/datatables.bootstrap5.css') }}" />
@@ -93,6 +94,46 @@
     <script src="{{ asset('template/assets/vendor/libs/bootstrap-daterangepicker/bootstrap-daterangepicker.js') }}"></script>
     <script src="{{ asset('template/assets/vendor/libs/jquery-timepicker/jquery-timepicker.js') }}"></script>
 
+    <style>
+        /* CSS untuk animasi loading */
+        .sk-wave {
+            margin: 20px auto;
+            width: 40px;
+            height: 40px;
+            text-align: center;
+            display: none; /* Mulai dengan animasi loading disembunyikan */
+            position: absolute; /* Tempatkan di depan card */
+            z-index: 99; /* Pastikan muncul di depan card */
+            left: 50%; /* Atur ke 50% dari parent */
+            top:50%;
+            transform: translateX(-50%,-50%); /* Geser elemen ke kiri sejauh setengah lebar elemen */
+        }
+        .sk-wave-rect {
+            background-color: #337ab7;
+            height: 100%;
+            width: 6px;
+            display: inline-block;
+            -webkit-animation: sk-wave 1.5s infinite ease-in-out;
+            animation: sk-wave 1.5s infinite ease-in-out;
+        }
+        .card.blur {
+            filter: blur(3px); /* Menetapkan efek blur pada card */
+        }
+        @-webkit-keyframes sk-wave {
+            0%, 40%, 100% { -webkit-transform: scaleY(0.4); }
+            20% { -webkit-transform: scaleY(1.0); }
+        }
+        @keyframes sk-wave {
+            0%, 40%, 100% {
+            transform: scaleY(0.4);
+            -webkit-transform: scaleY(0.4);
+            }  20% {
+            transform: scaleY(1.0);
+            -webkit-transform: scaleY(1.0);
+            }
+        }
+      
+    </style> 
 </head>
 
 <body>

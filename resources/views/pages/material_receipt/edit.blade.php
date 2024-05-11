@@ -196,7 +196,7 @@
                     <div class="row">
                         <div class="col-md-12 mb-3" id="modalCenterMessage"></div>
                         <div class="col-md-12">
-                            <input type="hidden" class="form-control" name="modalNote" id="modalNote">
+                            <textarea type="hidden" class="form-control" name="modalNote" id="modalNote"></textarea>
                         </div>
                     </div>
                 </div>
@@ -360,13 +360,13 @@
                     if(mode == 'Reject'){
                         var modalCenterTitle = "Confirm Reject Data";
                         var modalMessage = "Please, fill the reason!";
-                        $('#modalNote').attr("type","text");
+                        $('#modalNote').removeClass("d-none");
                         $('form').attr('action','{{ url("inventory/material-request/reject")}}'+'/'+dataId);
                     }
                     else if(mode == 'Revision'){
                         var modalCenterTitle = "Confirm Revision Data";
                         var modalMessage = "Please, fill the reason!";
-                        $('#modalNote').attr("type","text");
+                        $('#modalNote').removeClass("d-none");
                         $('form').attr('action','{{ url("inventory/material-request/revision")}}'+'/'+dataId);
                     }
                     else if(mode == "Approved"){
@@ -380,7 +380,7 @@
                         }
 
                         var modalCenterTitle = "Confirm Approve Data";
-                        $('#modalNote').attr("type","hidden");
+                        $('#modalNote').addClass("d-none");
                         if(isChanged == true){
                             var modalMessage = "Are you sure to approve and revisied this data?";
                         }
@@ -392,7 +392,7 @@
                     else if(mode == "Update"){
                         var modalCenterTitle = "Confirm Update Data";
                         var modalMessage = "Are you sure to update this data?";
-                        $('#modalNote').attr("type","hidden");
+                        $('#modalNote').addClass("d-none");
                         $('form').attr('action','{{ url("inventory/material-request/update")}}'+'/'+dataId);
                     }
 

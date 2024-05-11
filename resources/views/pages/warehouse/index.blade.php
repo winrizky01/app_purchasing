@@ -111,6 +111,17 @@
                                 <textarea class="form-control" id="description" name="description" rows="3"></textarea>
                             </div>
                             <div class="col-md-12 mb-2">
+                                <small class="text-light d-block">Option Warehouse</small>
+                                <div class="form-check form-check-inline mt-3">
+                                    <input class="form-check-input" type="radio" name="option_warehouse" id="inlineRadio1" value="general">
+                                    <label class="form-check-label" for="inlineRadio1">General</label>
+                                </div>
+                                <div class="form-check form-check-inline mt-3">
+                                    <input class="form-check-input" type="radio" name="option_warehouse" id="inlineRadio2" value="extra_countable">
+                                    <label class="form-check-label" for="inlineRadio2">Extra Countable</label>
+                                </div>
+                            </div>
+                            <div class="col-md-12 mb-2">
                                 <label class="form-label" for="status">Status</label>
                                 <select id="status" name="status" class="form-select select2" data-allow-clear="true"
                                     required>

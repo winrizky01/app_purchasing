@@ -92,15 +92,16 @@ class WarehouseController extends Controller
         DB::beginTransaction();
         try {
             $warehouse = Warehouse::create([
-                "code"       => $request->code,
-                "name"       => $request->name,
-                "location"   => $request->location,
+                "code"                  => $request->code,
+                "name"                  => $request->name,
+                "location"              => $request->location,
                 "contact_person"        => $request->contact_person,
                 "contact_person_number" => $request->contact_person_number,
-                "description"=> $request->description,
-                "status"     => $request->status,
-                "created_at" => date("Y-m-d H:i:s"),
-                "created_by" => auth()->user()->id,
+                "description"           => $request->description,
+                "option_warehouse"      => $request->option_warehouse,
+                "status"                => $request->status,
+                "created_at"            => date("Y-m-d H:i:s"),
+                "created_by"            => auth()->user()->id,
             ]);
         } catch (Exception $e) {
             DB::rollback();
@@ -148,9 +149,10 @@ class WarehouseController extends Controller
             $warehouse->code       = $request->code;
             $warehouse->name       = $request->name;
             $warehouse->location   = $request->location;
-            $warehouse->contact_person        = $request->contact_person;
-            $warehouse->contact_person_number = $request->contact_person_number;
-            $warehouse->description= $request->description;
+            $warehouse->contact_person          = $request->contact_person;
+            $warehouse->contact_person_number   = $request->contact_person_number;
+            $warehouse->description             = $request->description;
+            $warehouse->option_warehouse        = $request->option_warehouse;
             $warehouse->status     = $request->status;
             $warehouse->updated_at = date("Y-m-d H:i:s");
             $warehouse->updated_by = auth()->user()->id;
