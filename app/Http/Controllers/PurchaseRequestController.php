@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 
+use App\Models\PurchaseRequest;
+use App\Models\PurchaseRequestDetail;
 use App\Models\Product;
 use App\Models\ProductSerial;
 use App\Models\General;
@@ -53,12 +55,12 @@ class PurchaseRequestController extends Controller
                 $limit = $request->limit;
             }
             if($request->id != ""){
-                $where[] = ["products.id", $request->id];
+                $where[] = ["purchase_requests.id", $request->id];
             }
 
             $offset = ($page - 1) * $limit;
             
-            $query = Product::where($where)->orderBy("products.id", "ASC");
+            $query = PurchaseRequest::where($where)->orderBy("purchase_requests.id", "ASC");
             if ($limit > 0) {
                 $query = $query->offset($offset)->limit($limit)->paginate($limit);
             } 
@@ -68,7 +70,7 @@ class PurchaseRequestController extends Controller
 
             return response()->json([
                         'status' => true,
-                        'message'=> "Product successfuly access",
+                        'message'=> "PurchaseRequest successfuly access",
                         'code'   => 200,
                         'results'=> $query
                     ], 200);
@@ -97,13 +99,11 @@ class PurchaseRequestController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(),[
-            'product_category_id' => 'required',
-            'name'      => 'required',
-            'code'      => 'required',
-            'sku'       => 'required',
-            'unit_id'   => 'required',
-            'is_inventory'  => 'required',
-            'status'    => 'required'
+            'purchase_request_no' => 'required',
+            'code'                => 'required',
+            'department_id'       => 'required',
+            'effective_date'      => 'required',
+            'date'                => 'required',
         ]);
 
         if($validator->fails()){
@@ -119,27 +119,59 @@ class PurchaseRequestController extends Controller
                 $photo    = str_replace(" ", "-", $file->getClientOriginalName());
             }
 
-            $product = Product::create([
-                'product_category_id' => $request->product_category_id,
-                'name'          => $request->name,
-                'code'          => $request->code,
-                'sku'           => $request->sku,
-                'unit_id'       => $request->unit_id,
-                'is_inventory'  => $request->is_inventory,
-                'dimension'     => $request->dimension,
-                'part_number'   => $request->part_number,
-                'machine_id'    => $request->machine_id,
-                "description"   => $request->description,
-                "photo"         => $photo !== "" ? 'template/assets/img/products/'.$photo : null,
-                "status"        => $request->status,
-                "created_at"    => date("Y-m-d H:i:s"),
-                "created_by"    => auth()->user()->id,
+            $purchaseRequest = PurchaseRequest::create([
+                'code'                  => $request->code,
+                'purchase_request_no'   => $request->purchase_request_no,
+                'department_id'         => $request->department_id,
+                'revision'              => $request->revision,
+                'effective_date'        => $request->effective_date,
+                'date'                  => $request->date,
+                'document_status_id'    => $request->document_status_id,
+                'notes'                 => $request->notes,
+                "created_at"            => date("Y-m-d H:i:s"),
+                "created_by"            => auth()->user()->id,
             ]);
+            if($purchaseRequest){
 
-            if($product){
-                if($photo != ""){
-                    $file->move(public_path('template/assets/img/products/'), $photo);
+                if ($request->purchase_request_details) {
+                    foreach ($request->purchase_request_details as $key => $value) {
+                        if($request->expectsJson()){
+                            $product_id                    = null;
+                            $qty                           = null;
+                            $description                   = null;
+                            $identity_required_date        = null;    
+                        }
+                        else{
+                            $product_id                 = $value["product_id"];
+                            $qty                        = $value["product_qty"];
+                            $description                = $value["product_description"];
+                            $identity_required_date     = $value["identity_required_date"];
+                        }
+
+                        $materialRequestDetail = PurchaseRequestDetail::create([
+                            'purchase_request_id'       => $purchaseRequest->id,
+                            'product_id'                => $product_id,
+                            'qty'                       => $qty,
+                            'description'               => $description,
+                            'identity_required_date'    => $identity_required_date,
+                        ]);
+
+                        if (!$materialRequestDetail) {
+                            DB::rollback();
+                            return handleErrorResponse($request, "Opps, data failed created material request details", 'inventory/material-request', 404, null);
+                        }
+                    }
                 }
+
+                $getDocumentStatus = findAllStatusGeneral(["id"=>$request->document_status_id]);
+                if($getDocumentStatus->name == "Submit"){
+                    $approval = approvalTransaction($this->type_transaction_id, $purchaseRequest->id, $newDocumentStatus->id);
+                    if($approval == false){
+                        DB::rollback();
+                        return handleErrorResponse($request, "Opps, error approval data", 'inventory/material-request', 404, null);
+                    }
+                }
+
             }
         } catch (Exception $e) {
             DB::rollback();
@@ -158,15 +190,44 @@ class PurchaseRequestController extends Controller
         }
         else{
             Session::put('success','Data successfuly created.');
-            return redirect()->to('master/product');
+            return redirect()->to('purchasing/purchase-request');
         }
     }
 
     public function edit(Request $request, $id)
     {
-        $product = Product::find($id);
-        if(!$product){
-            return handleErrorResponse($request, 'Opps, data not found!', 'master/product', 404, null);
+        // page control
+        if(!pageControl($request)){
+            return redirect('/');
+        }
+
+        $check_role = session('role')->name;
+
+        $materialRequest = PurchaseRequest::with(['purchase_request_details','purchase_request_details.product','department','document_status','createdBy','last_update'])->find($id);
+        if(!$materialRequest){
+            return handleErrorResponse($request, 'Opps, data not found!', 'purchasing/purchase_request', 404, null);
+        }
+
+        $getDocumentStatus = findAllStatusGeneral(["id"=>$materialRequest->document_status_id]);
+        $getDocumentStatus = $getDocumentStatus->name;
+        
+        if($getDocumentStatus == "Draft"){
+            if($check_role !== "End User"){
+                return handleErrorResponse($request, 'Opps, sorry you dont have access!', 'purchasing/purchase_request', 404, null);
+            }    
+        }
+        else if(($getDocumentStatus == "Waiting Approval Tech Support")||($getDocumentStatus == "Revisied Plant Manager")){
+            if($check_role !== "Tech Support"){
+                return handleErrorResponse($request, 'Opps, sorry you dont have access!', 'purchasing/purchase_request', 404, null);
+            }    
+        }
+        else if($getDocumentStatus == "Waiting Approval Plant Manager"){
+            if($check_role !== "Plant Manager"){
+                return handleErrorResponse($request, 'Opps, sorry you dont have access!', 'purchasing/purchase_request', 404, null);
+            }    
+        }
+        else{
+            return handleErrorResponse($request, 'Opps, sorry you dont have access!', 'purchasing/purchase_request', 404, null);
         }
 
         if($request->expectsJson())
@@ -175,14 +236,14 @@ class PurchaseRequestController extends Controller
                 'status' => true,
                 'message'=> "Data found.",
                 'code'   => 200,
-                'results'=> $product
+                'results'=> $purchaseRequest
             ], 200);
         }
         else{
-            $data["title"] = "Edit Product";
-            $data["data"]  = $product;
+            $data["title"] = "Edit PurchaseRequest";
+            $data["data"]  = $purchaseRequest;
 
-            $view = "pages.product.edit";
+            $view = "pages.purchase_request.edit";
             
             return view($view, $data);
         }
@@ -191,51 +252,39 @@ class PurchaseRequestController extends Controller
     public function update(Request $request, $id)
     {
         $validator = Validator::make($request->all(),[
-            'product_category_id' => 'required',
-            'name'      => 'required',
-            'code'      => 'required',
-            'sku'       => 'required',
-            'unit_id'   => 'required',
-            'is_inventory'  => 'required',
-            'status'    => 'required'
+            'purchase_request_no' => 'required',
+            'code'                => 'required',
+            'department_id'       => 'required',
+            'effective_date'      => 'required',
+            'date'                => 'required',
         ]);
 
         if($validator->fails()){
-            return handleErrorResponse($request, 'The following fields are required !', 'master/product', 404, null);
+            return handleErrorResponse($request, 'The following fields are required !', 'master/purchase-request', 404, null);
         }
 
-        $product = Product::find($id);
-        if(!$product){
-            return handleErrorResponse($request, 'Opps, data not found!', 'master/product', 404, null);
+        $purchaseRequest = Product::find($id);
+        if(!$purchaseRequest){
+            return handleErrorResponse($request, 'Opps, data not found!', 'master/purchase-request', 404, null);
         }
 
         DB::beginTransaction();
         try {
-            $product->product_category_id = $request->product_category_id;
-            $product->name          = $request->name;
-            $product->code          = $request->code;
-            $product->sku           = $request->sku;
-            $product->unit_id       = $request->unit_id;
-            $product->is_inventory  = $request->is_inventory;
-            $product->dimension     = $request->dimension;
-            $product->part_number   = $request->part_number;
-            $product->machine_id    = $request->machine_id;
-            $product->description   = $request->description;
-            $product->status        = $request->status;
-            $product->updated_at    = date("Y-m-d H:i:s");
-            $product->updated_by    = auth()->user()->id;
-
-            if ($request->hasFile('media')) {
-                $file   = $request->file('media');
-                $photo  = str_replace(" ", "-", $file->getClientOriginalName());
-                $product->photo = $photo !== "" ? 'template/assets/img/products/'.$photo : null;
-                $file->move(public_path('template/assets/img/products/'), $photo);
-            }
-            $product->save();
+            $purchaseRequest->code                          = $request->code;
+            $purchaseRequest->purchase_request_no           = $request->purchase_request_no;
+            $purchaseRequest->department_id                 = $request->department_id;
+            $purchaseRequest->revision                      = $request->revision;
+            $purchaseRequest->effective_date                = $request->effective_date;
+            $purchaseRequest->date                          = $request->date;
+            $purchaseRequest->document_status_id            = $request->document_status_id;
+            $purchaseRequest->notes                         = $request->notes;
+            $purchaseRequest->updated_at                    = date("Y-m-d H:i:s");
+            $purchaseRequest->updated_by                    = auth()->user()->id;
+            $purchaseRequest->save();
         }
         catch (Exception $e) {
             DB::rollback();
-            return handleErrorResponse($request, $e->getMessage(), 'master/product', 404, null);
+            return handleErrorResponse($request, $e->getMessage(), 'master/purchase-request', 404, null);
         }
 
         DB::commit();
@@ -250,27 +299,27 @@ class PurchaseRequestController extends Controller
         }
         else{
             Session::put('success','Data successfuly updated.');
-            return redirect()->to('master/product');
+            return redirect()->to('master/purchase-request');
         }
     }
 
     public function destroy(Request $request, $id)
     {
         DB::beginTransaction();
-        $product = Product::find($id);
-        if(!$product){
-            return handleErrorResponse($request, 'Opps, data not found.', 'master/product', 404, null);
+        $purchaseRequest = Product::find($id);
+        if(!$purchaseRequest){
+            return handleErrorResponse($request, 'Opps, data not found.', 'master/purchase_request', 404, null);
         }
 
         try {
-            $product->status     = "inactive";
-            $product->deleted_at = date("Y-m-d H:i:s");
-            $product->deleted_by = auth()->user()->id;
-            $product->save();
-            $product->delete();
+            $purchaseRequest->document_status_id     = $request->document_status_id ;
+            $purchaseRequest->deleted_at             = date("Y-m-d H:i:s");
+            $purchaseRequest->deleted_by             = auth()->user()->id;
+            $purchaseRequest->save();
+            $purchaseRequest->delete();
         } catch (Exception $e) {
             DB::rollBack();
-            return handleErrorResponse($request, 'Opps, data failed to delete.', 'master/product', 404, null);
+            return handleErrorResponse($request, 'Opps, data failed to delete.', 'master/purchase-request', 404, null);
         }
 
         DB::commit();
@@ -285,7 +334,7 @@ class PurchaseRequestController extends Controller
         }
         else {
             Session::put('success','Data successfuly deleted.');
-            return redirect()->to('master/product');
+            return redirect()->to('master/purchase-request');
         }
     }
 
@@ -293,13 +342,13 @@ class PurchaseRequestController extends Controller
     {
         $where = [];
         if($request->name != ""){
-            $where[] = ["products.name", "LIKE", "%".$request->name."%"];
+            $where[] = ["purchase_requests.name", "LIKE", "%".$request->name."%"];
         }
         if($request->status != ""){
-            $where[] = ['products.status', $request->status];
+            $where[] = ['purchase_requests.status', $request->status];
         }
 
-        $data = Product::with(['product_unit'])->where($where)->get();
+        $data = PurchaseRequest::where($where)->get();
         return datatables()->of($data)->toJson();
     }
 
