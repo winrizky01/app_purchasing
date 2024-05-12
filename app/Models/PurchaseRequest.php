@@ -32,6 +32,11 @@ class PurchaseRequest extends Model
         return $this->hasOne(Warehouse::class, 'id', 'warehouse_id');
     }
 
+    public function remark()
+    {
+        return $this->hasOne(General::class, 'id', 'remark_id');
+    }
+
     public function document_status()
     {
         return $this->hasOne(General::class, 'id', 'document_status_id');

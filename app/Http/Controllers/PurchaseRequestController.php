@@ -7,15 +7,16 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 
+use App\Models\User;
+use App\Models\Role;
+use App\Models\General;
+use App\Models\Product;
 use App\Models\PurchaseRequest;
 use App\Models\PurchaseRequestDetail;
 use App\Models\PurchaseRequestRevision;
 use App\Models\PRHistory;
 use App\Models\PRDHistory;
-use App\Models\Product;
 use App\Models\ProductSerial;
-use App\Models\General;
-use App\Models\Role;
 
 use DB;
 use Redirect;
@@ -23,6 +24,7 @@ use DataTables;
 use Exception;
 use Validator;
 use File;
+use PDF;
 
 class PurchaseRequestController extends Controller
 {
@@ -719,5 +721,72 @@ class PurchaseRequestController extends Controller
     }
 
     public function print(Request $request, $id)
-    {}
+    {
+        // page control
+        if(!pageControl($request)){
+            return redirect('/');
+        }            
+
+        $purchaseRequest = PurchaseRequest::with([
+                    'detail',
+                    'detail.product',
+                    'detail.product.product_category',
+                    'detail.product.product_unit' ,
+                    'detail.product.product_machine.machine' ,
+                    'department',
+                    'division',
+                    'remark',
+                    'document_status',
+                    'createdBy',
+                    'last_update'
+                ])
+                ->find($id);
+
+        $createdBy = User::with(['roleId'])->find($purchaseRequest->created_by);
+        $createdBy = ["name"=>$createdBy->name, "role"=>$createdBy->roleId->name];
+
+        $historyTechSupport = findAllStatusGeneral(["name"=>"Approved Tech Support"]);
+        $riviwedBy = DB::table("approvals")
+                        ->where("type_transaction_id", $this->type_transaction_id)
+                        ->where("transaction_id", $id)
+                        ->where("document_status", $historyTechSupport->id)
+                        ->orderBy("created_at", "DESC")
+                        ->get();
+        if(count($riviwedBy) > 0){
+            $riviwedBy = User::with(["roleId"])->find($riviwedBy[0]->user_id);
+            $riviwedBy = ["name"=>$riviwedBy->name, "role"=>$riviwedBy->roleId->name];
+        }
+        else{
+            $riviwedBy = [];
+        }
+
+        $historyPlantManager = findAllStatusGeneral(["name"=>"Approved Plant Manager"]);
+        $approvedBy = DB::table("approvals")
+                        ->where("type_transaction_id", $this->type_transaction_id)
+                        ->where("transaction_id", $id)
+                        ->where("document_status", $historyPlantManager->id)
+                        ->orderBy("created_at", "DESC")
+                        ->get();
+        if(count($approvedBy) > 0){
+            $approvedBy = User::with(["roleId"])->find($approvedBy[0]->user_id);
+            $approvedBy = ["name"=>$approvedBy->name, "role"=>$approvedBy->roleId->name];
+        }
+        else{
+            $approvedBy = [];
+        }
+
+        $signature = ["created"=>$createdBy, "riviwed"=>$riviwedBy, "approved"=>$approvedBy];
+
+        $data = [
+            'title'     => 'Purchase Request', 
+            'data'      => $purchaseRequest,
+            'signature' => $signature
+        ];
+
+        $pdfContent = view('pdf.purchase_request.print', compact('data'));
+
+        $pdf = PDF::loadHtml($pdfContent);
+        
+        return $pdf->download('purchase_request.pdf');
+    }
 }

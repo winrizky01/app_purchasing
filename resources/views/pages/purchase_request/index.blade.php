@@ -239,6 +239,38 @@
                 $('#confirmDelete').attr('action', '{{url("master/product/delete")}}/'+rowData.id);
                 $('#modalCenter').modal('toggle');
             });
+            $('.datatables tbody').on('click', '.download-record', function(){
+                var selectedRow = $(this).closest('tr');
+                var rowData = $('.datatables').DataTable().row(selectedRow).data();
+                rowData = rowData.id
+                $.ajax({
+                    url: '{{ url("purchasing/purchase-request/print") }}/' + rowData,
+                    type: 'GET',
+                    xhrFields: {
+                        responseType: 'blob' // Mengindikasikan bahwa respons adalah binary data (blob)
+                    },
+                    success: function(response) {
+                        // Membuat objek URL untuk file blob
+                        var url = window.URL.createObjectURL(new Blob([response]));
+
+                        // Membuat elemen anchor untuk menautkan ke objek URL
+                        var a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'purchase_request.pdf'; // Nama file yang akan diunduh
+                        document.body.appendChild(a);
+
+                        // Mengklik elemen anchor secara otomatis untuk memulai unduhan
+                        a.click();
+
+                        // Menghapus elemen anchor setelah selesai
+                        window.URL.revokeObjectURL(url);
+                        document.body.removeChild(a);
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Request failed: " + error);
+                    }
+                });
+            });
 
             $('#handleReset').click(function() {
                 $('#filterName').val('');
@@ -268,7 +300,12 @@
                 ajaxData = {'date':date, 'code':code, 'status': status};
                 initializeDataTable(ajaxUrl, ajaxData, columns, columnDefs, buttons);
             });
-
         });
+
+        function handleRequestAjax(option, data){
+            if(option == "pdf"){
+                window.open(data.url, '_blank');
+            }
+        }
     </script>
 @endsection
