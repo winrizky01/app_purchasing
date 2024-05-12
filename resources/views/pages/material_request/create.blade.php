@@ -91,7 +91,8 @@
                         </div>
                         <div class="card-footer border-top py-3">
                             <a href="{{ url('inventory/material-request') }}" class="btn btn-secondary btn-sm">Cancel</a>
-                            <button type="submit" name="submitButton" class="btn btn-primary btn-sm">Submit</button>
+                            {{-- <button type="submit" name="submitButton" class="btn btn-primary btn-sm">Submit</button> --}}
+                            <button type="button" class="btn btn-primary btn-sm" id="checkStock">Submit</button>
                         </div>
                     </form>
                 </div>
@@ -242,6 +243,37 @@
                 initializeDataTable(ajaxUrl, ajaxData, columns, columnDefs, buttons);
             });
 
+            $('#checkStock').click(function(){
+                var count = 0;
+                $('#listMaterialDetail > tbody > tr').each(function(){
+                    count++;
+                });
+
+                if(count == 0){
+                    toasMassage({status:false, message:'Opps, please fill material request detail!'});
+                    e.preventDefault();
+                }
+
+                checkStockBeforeSubmit().then(function(stockIsValid) {
+                    // Jika stok valid, lanjutkan dengan pengiriman form
+                    if (stockIsValid.status) {
+                        toasMassage({status:true, message:'Sufficient stock for all products! Please wait a moment!'});
+
+                        // Tunda pengiriman form
+                        $('.sk-wave').show();
+                        $('.card').addClass('blur');
+
+                        $('#checkStock').attr('disabled', 'disabled');
+                        setTimeout(function() {
+                            $('form').submit();
+                        }, 6000); // Waktu tunda dalam milidetik (6000 ms = 6 detik)
+                    } else {
+                        // Beritahu pengguna bahwa stok tidak mencukupi
+                        toasMassage({status:false, message:stockIsValid.message});
+                    }
+                });
+            });
+
             $('form').submit(function(e){
                 var count = 0;
                 $('#listMaterialDetail tbody tr').each(function(){
@@ -294,14 +326,57 @@
                         '<td style="text-transform: capitalize">'+param["data"]["name"]+'</td>'+
                         '<td style="text-transform: capitalize">'+param["data"]["description"]+'</td>'+
                         '<td style="text-transform: capitalize">'+param["data"]["product_unit"]["name"]+'</td>'+
-                        '<td style="text-transform: capitalize"><input type="number"class="form-control detailQtyChange" name="material_request_details['+index+'][product_qty]" max="'+param["qty"]+'" min="1" value="'+param["qty"]+'"></td>'+
+                        '<td style="text-transform: capitalize"><input type="number"class="form-control detailQtyChange" name="material_request_details['+index+'][qty]" max="'+param["qty"]+'" min="1" value="'+param["qty"]+'"></td>'+
                         '<td style="text-transform: capitalize"><input type="text" class="form-control" name="material_request_details['+index+'][product_note]"/></td>'+
                         '<td><button type="button" class="btn btn-danger btn-sm deleteList"><i class="fa fa-trash"></i></button></td>'+
-                    '<tr>';
+                    '</tr>';
 
                 $("#listMaterialDetail tbody").append(html);
             }
 
         }
+
+        function checkStockBeforeSubmit() {
+            return new Promise(function(resolve, reject) {
+                var allProductsValid        = true;
+                var totalRequestsPending    = $('#listMaterialDetail tbody tr').length;
+
+                // Loop melalui setiap baris pada tabel material usage detail
+                $('#listMaterialDetail tbody tr').each(function(index, row) {
+                    var productId   = $(row).find('input[name^="material_request_details["][name$="[product_id]"]').val();
+                    var warehouseId = "";
+                    var option_warehouse = "general";
+                    var qty         = $(row).find('input[name^="material_request_details["][name$="[qty]"]').val();
+
+                    console.log(productId, qty)
+
+                    if((productId != "")&&(qty != "")){
+                        // Panggil fungsi untuk memeriksa stok untuk setiap produk
+                        checkStockForProduct(productId, warehouseId, qty, option_warehouse, function(isValid) {
+                            totalRequestsPending--; // Kurangi total panggilan AJAX yang masih tertunda
+
+                            if (!isValid.status) {
+                                allProductsValid = false;
+                            }
+                            // Jika semua panggilan AJAX selesai, resolve Promise dengan nilai allProductsValid
+                            if (totalRequestsPending === 0) {
+                                if(!isValid.product_name){
+                                    var message = isValid.message;
+                                }
+                                else{
+                                    var message = 'Stock is not sufficient for ' + isValid.product_name + '!';
+                                }
+                                resolve({'status':allProductsValid, 'message': message});
+                            }
+                        });
+                    }
+                    else{
+                        resolve({'status':false, 'message':'Opps, please fill this form!'});
+                    }
+                });
+            });
+        }
+
+
     </script>
 @endsection

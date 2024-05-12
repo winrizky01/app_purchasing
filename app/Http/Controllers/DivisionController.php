@@ -20,7 +20,7 @@ class DivisionController extends Controller
     {
         $query = Division::select(["id", "name", "name as text", "code"]);
         if($request->department_id != ""){
-            $query = $query->where("deparmtent_id", $request->department_id);
+            $query = $query->where("department_id", $request->department_id);
         }
         $query = $query->get();
 

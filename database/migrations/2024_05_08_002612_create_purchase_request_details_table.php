@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('purchase_request_details', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('purchase_request_detail_id')->nullable()->constrained()->cascadeOnDelete();
+            $table->foreignId('purchase_request_id')->nullable()->constrained()->cascadeOnDelete();
             $table->unsignedBigInteger('product_id')->nullable();
             $table->double("qty")->default(0);
             $table->text("description")->nullable();

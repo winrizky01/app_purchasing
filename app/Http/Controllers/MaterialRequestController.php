@@ -196,7 +196,7 @@ class MaterialRequestController extends Controller
                         }
                         else{
                             $product_id = $value["product_id"];
-                            $qty        = $value["product_qty"];
+                            $qty        = $value["qty"];
                             $notes      = $value["product_note"];
                         }
 
@@ -333,7 +333,7 @@ class MaterialRequestController extends Controller
             ], 200);
         }
         else{
-            $data["title"] = "Edit Material Request";
+            $data["title"] = "Show Material Request";
             $data["data"]  = $materialRequest;
             $data["mode"]  = "show";
             
@@ -446,7 +446,7 @@ class MaterialRequestController extends Controller
                         }
                         else{
                             $product_id = $value["product_id"];
-                            $qty        = $value["product_qty"];
+                            $qty        = $value["qty"];
                             $notes      = $value["product_note"];
                         }
 

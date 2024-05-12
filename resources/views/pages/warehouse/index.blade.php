@@ -113,11 +113,11 @@
                             <div class="col-md-12 mb-2">
                                 <small class="text-light d-block">Option Warehouse</small>
                                 <div class="form-check form-check-inline mt-3">
-                                    <input class="form-check-input" type="radio" name="option_warehouse" id="inlineRadio1" value="general">
+                                    <input class="form-check-input" type="radio" name="warehouse_type" id="inlineRadio1" value="general">
                                     <label class="form-check-label" for="inlineRadio1">General</label>
                                 </div>
                                 <div class="form-check form-check-inline mt-3">
-                                    <input class="form-check-input" type="radio" name="option_warehouse" id="inlineRadio2" value="extra_countable">
+                                    <input class="form-check-input" type="radio" name="warehouse_type" id="inlineRadio2" value="extra_countable">
                                     <label class="form-check-label" for="inlineRadio2">Extra Countable</label>
                                 </div>
                             </div>

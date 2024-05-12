@@ -12,14 +12,24 @@ class PurchaseRequest extends Model
 
     protected $guarded = [];
 
-    public function purchaserequestdetails()
+    public function detail()
     {
-        return $this->hasMany(PurchaseRequestDetail::class, 'id','purchase_request_id');
+        return $this->hasMany(PurchaseRequestDetail::class, 'purchase_request_id','id');
     }
 
     public function department()
     {
         return $this->hasOne(Department::class, 'id', 'department_id');
+    }
+
+    public function division()
+    {
+        return $this->hasOne(Division::class, 'id', 'division_id');
+    }
+
+    public function warehouse()
+    {
+        return $this->hasOne(Warehouse::class, 'id', 'warehouse_id');
     }
 
     public function document_status()

@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('warehouses', function (Blueprint $table) {
-            $table->enum('warehouse_type', ['general', 'extra-countable'])->default('general');
+        Schema::table('purchase_request_details', function (Blueprint $table) {
+            $table->unsignedBigInteger('document_status_id')->nullable();
         });
     }
 
@@ -21,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('warehouses', function (Blueprint $table) {
-            $table->drop('warehouse_type');
+        Schema::table('purchase_request_details', function (Blueprint $table) {
+            $table->drop('document_status_id');
         });
     }
 };

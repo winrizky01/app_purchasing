@@ -32,13 +32,17 @@
             Route::prefix('purchase-request')->group(function(){
                 Route::get('/', [App\Http\Controllers\PurchaseRequestController::class, 'index']);
                 Route::get('/create', [App\Http\Controllers\PurchaseRequestController::class, 'create']);
+                Route::get('/show/{id}', [App\Http\Controllers\PurchaseRequestController::class, 'show']);
                 Route::get('/edit/{id}', [App\Http\Controllers\PurchaseRequestController::class, 'edit']);
                 Route::get('/dataTables', [App\Http\Controllers\PurchaseRequestController::class, 'dataTables']);
                 Route::get('/select', [App\Http\Controllers\PurchaseRequestController::class, 'select']);
                 Route::get('/print/{id}', [App\Http\Controllers\PurchaseRequestController::class, 'print']);
+                Route::get('/history/{id}', [App\Http\Controllers\PurchaseRequestController::class, 'history']);
 
                 Route::post('/store', [App\Http\Controllers\PurchaseRequestController::class, 'store']);
                 Route::post('/update/{id}', [App\Http\Controllers\PurchaseRequestController::class, 'update']);
+                Route::post('/revision/{id}', [App\Http\Controllers\PurchaseRequestController::class, 'revision']);
+                Route::post('/reject/{id}', [App\Http\Controllers\PurchaseRequestController::class, 'reject']);
 
                 Route::delete('/delete/{id}', [App\Http\Controllers\PurchaseRequestController::class, 'destroy']);
             });

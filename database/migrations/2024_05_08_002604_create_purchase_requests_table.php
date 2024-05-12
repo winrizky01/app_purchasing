@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string("code")->nullable();
             $table->string("purchase_request_no")->nullable();
             $table->foreignId('department_id')->nullable()->constrained()->cascadeOnDelete();
-            $table->double("revision")->nullable;
+            $table->double("revision")->nullable();
             $table->dateTime('effective_date')->nullable();
             $table->date('date')->nullable();
             $table->unsignedBigInteger('document_status_id')->nullable();

@@ -127,46 +127,7 @@ class ReportProductController extends Controller
     }
 
     public function checkStock(Request $request){
-        // $start_date = date("Y-m-01");
-        // $end_date   = date("Y-m-d");
-        // $periode    = date("Y-m");
-
-        // $query = DB::table('products as p')
-        //             ->select(
-        //                 'p.id as product_id', 
-        //                 'p.name as product_name',
-        //                 DB::raw('(COALESCE(SUM(cs.closing_quantity), 0) + 
-        //                     COALESCE(SUM(CASE WHEN ts.stock_type_name = "IN" THEN ts.qty ELSE 0 END), 0) - 
-        //                     COALESCE(SUM(CASE WHEN ts.stock_type_name = "OUT" THEN ts.qty ELSE 0 END), 0)
-        //                 ) AS final_stock')
-        //             )
-        //             ->leftJoin('product_stocks as ts', function($j) use ($start_date, $end_date, $request){
-        //                 if($request->warehouse_id != ""){
-        //                     $j->on('p.id', '=', 'ts.product_id')
-        //                         ->whereBetween('ts.date',[$start_date, $end_date])
-        //                         ->where("ts.warehouse_id", $request->warehouse_id);
-        //                 }
-        //                 else{
-        //                     $j->on('p.id', '=', 'ts.product_id')
-        //                         ->whereBetween('ts.date',[$start_date, $end_date]);
-        //                 }
-        //             })
-        //             ->leftJoin('closing_stocks as cs', function($j) use ($periode, $request){
-        //                 if($request->warehouse_id != ""){
-        //                     $j->on('p.id', '=', 'cs.product_id')
-        //                         ->where('cs.period', '=', $periode)
-        //                         ->where("cs.warehouse_id", $request->warehouse_id);
-        //                 }
-        //                 else{
-        //                     $j->on('p.id', '=', 'cs.product_id')
-        //                         ->where('cs.period', '=', $periode);
-        //                 }
-        //             })
-        //             ->where("p.id", $request->product_id)
-        //             ->groupBy('p.id','p.name')
-        //             ->get();
-
-        $check_stock = checkStock($request->option_warehouse, $request->warehouse_id, $request->product_id);
+        $check_stock = checkStock($request->warehouse_id, $request->product_id, $request->option_warehouse);
         if($request->usageQty != ""){
             $usage_qty     = $request->usageQty * 1;
             $current_stock = $check_stock[0]->final_stock;
@@ -174,6 +135,9 @@ class ReportProductController extends Controller
                 return response()->json(["status"=>false, "product_name"=>$check_stock[0]->product_name, "product_id"=>$check_stock[0]->product_id]);
             }
             return response()->json(["status"=>true]);
+        }
+        else{
+            return response()->json(["product_name"=>$check_stock[0]->product_name, "product_id"=>$check_stock[0]->product_id, "final_stock"=>$check_stock[0]->final_stock]);
         }
     }
 }

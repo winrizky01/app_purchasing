@@ -134,7 +134,7 @@
 
         // Setup Datatable
         var ajaxUrl  = "{{ url('inventory/material-request/dataTables') }}";
-        var ajaxData = [];
+        var ajaxData = {"status":39};
         var columns  = [{ data: 'code' }, { data: 'request_date' }, { data: 'action' }];
         var columnDefs  =  [
             {
@@ -213,37 +213,6 @@
             });
 
         })
-
-        // Fungsi untuk melakukan pengecekan stok satu per satu
-        function checkStockForProduct(productId, warehouseId, qty, callback) {
-            $.ajax({
-                type: 'GET',
-                url: '{{ url("inventory/report/stock-product/checkStock") }}', // Ganti dengan URL yang benar
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                },
-                data: {
-                    'product_id': productId,
-                    'warehouse_id': warehouseId,
-                    'usageQty': qty
-                },
-                beforeSend: function(){
-                    $('.sk-wave').show();
-                    $('.card').addClass('blur');
-                },
-                success: function(response) {
-                    $('.sk-wave').hide();
-                    $('.card').removeClass('blur');
-
-                    callback(response)
-                },
-                error: function(xhr, status, error) {
-                    // Tangani error saat melakukan AJAX
-                    console.error('Error:', error);
-                    callback({'status':false,'message':'Error get data!'}); // Set hasil pengecekan stok ke false jika terjadi error
-                }
-            });
-        }
 
         function checkStockBeforeSubmit() {
             return new Promise(function(resolve, reject) {

@@ -194,7 +194,6 @@ class AdjustmentStockController extends Controller
                             $this->type_transaction_id, 
                             $adjustment->id, 
                             $request->warehouse_id, 
-                            null, 
                             $request->stock_type_id, 
                             $product_id, 
                             $qty);

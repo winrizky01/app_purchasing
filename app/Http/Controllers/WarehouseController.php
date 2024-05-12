@@ -98,7 +98,7 @@ class WarehouseController extends Controller
                 "contact_person"        => $request->contact_person,
                 "contact_person_number" => $request->contact_person_number,
                 "description"           => $request->description,
-                "option_warehouse"      => $request->option_warehouse,
+                "warehouse_type"        => $request->warehouse_type,
                 "status"                => $request->status,
                 "created_at"            => date("Y-m-d H:i:s"),
                 "created_by"            => auth()->user()->id,
@@ -152,7 +152,7 @@ class WarehouseController extends Controller
             $warehouse->contact_person          = $request->contact_person;
             $warehouse->contact_person_number   = $request->contact_person_number;
             $warehouse->description             = $request->description;
-            $warehouse->option_warehouse        = $request->option_warehouse;
+            $warehouse->warehouse_type          = $request->warehouse_type;
             $warehouse->status     = $request->status;
             $warehouse->updated_at = date("Y-m-d H:i:s");
             $warehouse->updated_by = auth()->user()->id;

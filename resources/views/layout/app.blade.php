@@ -274,6 +274,8 @@
             });
         }
 
+        function postingAjax(param){}
+
         function filePreview(input) {
             if (input.files && input.files[0]) {
                 if((input.files[0].type == 'image/png')||(input.files[0].type == 'image/jpg')||(input.files[0].type == 'image/jpeg')){
@@ -297,6 +299,39 @@
                 reader.readAsDataURL(input.files[0]);
             }
         }
+
+        // Fungsi untuk melakukan pengecekan stok satu per satu
+        function checkStockForProduct(productId, warehouseId, qty, option_warehouse, callback) {
+            $.ajax({
+                type: 'GET',
+                url: '{{ url("inventory/report/stock-product/checkStock") }}', // Ganti dengan URL yang benar
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                data: {
+                    'product_id'    : productId,
+                    'warehouse_id'  : warehouseId,
+                    'usageQty'      : qty,
+                    'option_warehouse' : option_warehouse
+                },
+                beforeSend: function(){
+                    $('.sk-wave').show();
+                    $('.card').addClass('blur');
+                },
+                success: function(response) {
+                    $('.sk-wave').hide();
+                    $('.card').removeClass('blur');
+
+                    callback(response)
+                },
+                error: function(xhr, status, error) {
+                    // Tangani error saat melakukan AJAX
+                    console.error('Error:', error);
+                    callback({'status':false,'message':'Error get data!'}); // Set hasil pengecekan stok ke false jika terjadi error
+                }
+            });
+        }
+
     </script>
 </body>
 

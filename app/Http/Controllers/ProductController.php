@@ -166,7 +166,7 @@ class ProductController extends Controller
 
         DB::commit();
 
-        if($request->expectsJson()){
+        if($request->expectsJson() || $request->ajax()){
             return response()->json([
                 'status' => true,
                 'message'=> "Data successfuly created.",

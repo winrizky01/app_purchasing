@@ -168,7 +168,7 @@ class MaterialUsageController extends Controller
                     }
 
                     $getStatusStockType = findAllStatusGeneral(["type"=>"stock_type_id","name"=>"OUT"]);
-                    $stockLog = productStock($this->type_transaction_id, $usage->id, $request->warehouse_id, null, $getStatusStockType->id, $product_id, $qty);
+                    $stockLog = productStock($this->type_transaction_id, $usage->id, $request->warehouse_id, $getStatusStockType->id, $product_id, $qty);
                     if(!$stockLog){
                         DB::rollback();
                         return handleErrorResponse($request, "Opps, error product stock log", 'inventory/material-usage', 404, null);

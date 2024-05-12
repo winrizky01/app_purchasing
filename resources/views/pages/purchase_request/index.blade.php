@@ -32,6 +32,10 @@
             <div class="card-body">
                 <div class="row pb-2 gap-3 gap-md-0">
                     <div class="col-md-4">
+                        <label for="filterDate">Date Document</label>
+                        <input type="text" class="form-control flatpickr-input active" placeholder="YYYY-MM-DD to YYYY-MM-DD" id="flatpickr-range">
+                    </div>
+                    <div class="col-md-4">
                         <label for="filterName">Name</label>
                         <input type="text" class="form-control" name="filterName" id="filterName" placeholder="Enter Name">
                     </div>
@@ -51,7 +55,7 @@
             </div>             
         </div>
         
-        <!-- Product List Table -->
+        <!-- Purchasing List Table -->
         <div class="card">
             <div class="card-header border-bottom">
                 <h5 class="card-title mb-1">{{ $title }}</h5>
@@ -65,9 +69,10 @@
                 <table class="datatables table border-top">
                     <thead>
                         <tr>
-                            <th>SKU</th>
-                            <th>Name</th>
-                            <th>Unit</th>
+                            <th>Request Date</th>
+                            <th>Code</th>
+                            <th>Department</th>
+                            <th>Revision</th>
                             <th>Status</th>
                             <th>Actions</th>
                         </tr>
@@ -107,27 +112,65 @@
     </div>
 
     <script type="text/javascript">
+        var role     = "{{session('role')->name}}";
         // Setup Datatable
-        var ajaxUrl  = "{{ url('master/product/dataTables') }}";
+        var ajaxUrl  = "{{ url('purchasing/purchase-request/dataTables') }}";
         var ajaxData = [];
-        var columns  = [{ data: 'sku' }, { data: 'name' }, {data: 'product_unit.name'}, { data: 'status' }, { data: 'action' }];
+        var columns  = [{ data: 'date' }, { data: 'code' }, {data: 'department.name'}, {data: 'revision'} , { data: 'status' }, { data: 'action' }];
         var columnDefs  =  [
+            {
+                // Convert date
+                targets: 0,
+                render: function(data, type, full, meta) {
+                    var parts = data.split('-');
+                    var formattedDay = ('0' + parts[0]).slice(-2);
+                    var formattedMonth = ('0' + parts[1]).slice(-2);
+                    var formattedYear = parts[2];
+                    var formattedDate = formattedDay + '-' + formattedMonth + '-' + formattedYear;
+                    return formattedDate;
+                }
+            },
+            {
+                // Check History
+                targets: -3,
+                render: function(data, type, full, meta) {
+                    var a = 0;
+                    if(data > 0){
+                        a = '<a href="{{ url("purchasing/purchase-request/history") }}/' + full.id + '" class="text-warning" style="text-decoration:underline">'+ data +'</a>';
+                    }
+                    return a;
+                }
+            },
             {
                 // User Status
                 targets: -2,
                 render: function(data, type, full, meta) {
-                    var status = '';
-                    if ((full['status'] == 1) || (full['status'] == 'active')) {
-                        status =
-                            '<span class="badge bg-label-success" text-capitalized> Active </span>';
-                    } else if ((full['status'] == 2) || (full['status'] == 'inactive')) {
-                        status =
-                            '<span class="badge bg-label-secondary" text-capitalized> Inactive </span>';
-                    } else if ((full['status'] == 3) || (full['status'] == 'pending')) {
-                        status =
-                            '<span class="badge bg-label-warning" text-capitalized> Pending </span>';
+                    var msg = '';
+                    var cls = '';
+                    if(full['document_status_id']){
+                        msg = full['document_status']['name'];
+                        if (
+                            (full['document_status']['name'] == 'Waiting Approval Tech Support')||
+                            (full['document_status']['name'] == 'Waiting Approval Plant Manager'||
+                            (full['document_status']['name'] == 'Draft') ||
+                            (full['document_status']['name'] == 'Revisied Plant Manager')
+                        )) {
+                            cls = 'bg-label-warning';
+                        }
+                        else if (full['document_status']['name'] == 'Approved Plant Manager') {
+                            cls = 'bg-label-success';
+                        }
+                        else if (
+                            (full['document_status']['name'] == 'Rejected Tech Support')||
+                            (full['document_status']['name'] == 'Rejected Plant Manager')||
+                            (full['document_status']['name'] == 'Processed')||
+                            (full['document_status']['name'] == 'Closed')
+                        ) {
+                            cls = 'bg-label-danger';
+                        }
                     }
 
+                    var status = '<span class="badge '+ cls +'" text-capitalized> '+ msg +' </span>';
                     return (status);
                 }
             },
@@ -138,13 +181,36 @@
                 searchable: false,
                 orderable: false,
                 render: function(data, type, full, meta) {
-                    return (
-                        '<div class="d-flex align-items-center">' +
-                            '<a href="{{ url("master/product/edit") }}/' + full.id +
-                            '" class="text-body edit-record"><i class="ti ti-edit ti-sm me-2"></i></a>' +
-                            '<a href="javascript:;" class="text-body delete-record"><i class="ti ti-trash ti-sm mx-2"></i></a>' +
-                        '</div>'
-                    );
+                    var action = '<div class="d-flex align-items-center">';
+                    if(role == "End User"){
+                        action += '<a href="{{ url("purchasing/purchase-request/show") }}/' + full.id + '" class="text-body"><i class="ti ti-eye ti-sm mx-2"></i></a>';
+                    }
+                    else if(role == "Tech Support"){
+                        if(full.document_status.name == "Waiting Approval Tech Support"){
+                            action += '<a href="{{ url("purchasing/purchase-request/edit") }}/' + full.id +'" class="text-body edit-record"><i class="ti ti-edit ti-sm me-2"></i></a>';
+                        }
+                        else if(full.document_status.name == "Revisied Plant Manager"){
+                            action += '<a href="{{ url("purchasing/purchase-request/edit") }}/' + full.id +'" class="text-body edit-record"><i class="ti ti-edit ti-sm me-2"></i></a>';
+                        }
+                        else{
+                            action += '<a href="{{ url("purchasing/purchase-request/show") }}/' + full.id + '" class="text-body"><i class="ti ti-eye ti-sm mx-2"></i></a>';
+                        }
+                    }
+                    else if(role == "Plant Manager"){
+                        if(full.document_status.name == "Waiting Approval Plant Manager"){
+                            action += '<a href="{{ url("purchasing/purchase-request/edit") }}/' + full.id + '" class="text-body edit-record"><i class="ti ti-edit ti-sm me-2"></i></a>';
+                        }
+                        else{
+                            action += '<a href="{{ url("purchasing/purchase-request/show") }}/' + full.id + '" class="text-body"><i class="ti ti-eye ti-sm mx-2"></i></a>';
+                        }
+                    }
+                    else{
+                        action += '<a href="{{ url("purchasing/purchase-request/show") }}/' + full.id + '" class="text-body"><i class="ti ti-eye ti-sm mx-2"></i></a>';
+                    }
+
+                    action += '<button type="button" class="btn btn-icon waves-effect download-record"><i class="ti ti-printer ti-sm me-2"></i></button> </div>';
+
+                    return action;
                 }
             }
         ];
@@ -160,6 +226,10 @@
         // Setup Datatable
 
         $(document).ready(function() {
+            $('#flatpickr-range').flatpickr({
+                mode: 'range'
+            });
+
             initializeDataTable(ajaxUrl, ajaxData, columns, columnDefs, buttons);
 
             // Delete Record
@@ -177,21 +247,25 @@
                 initializeDataTable(ajaxUrl, ajaxData, columns, columnDefs, buttons);
             });
             $('#handleFilter').click(function(){
-                var name = "";
-                var status = "";
-                if($('#filterName').val() != ""){
-                    name = $('#filterName').val();
+                var date    = "";
+                var code    = "";
+                var status  = "";
+                if($('#flatpickr-range').val() != ""){
+                    date = $('#flatpickr-range').val();
+                }
+                if($('#filterCode').val() != ""){
+                    code = $('#filterCode').val();
                 }
                 if($('#filterstatus').val() != ""){
                     status = $('#filterstatus').val();
                 }
 
-                if((name == "")&&(status == "")){
+                if((date == "")&&(code == "")&&(status == "")){
                     toasMassage({status:false, message:'Opps, please fill out some form!'});
                     return false;
                 }
 
-                ajaxData = {'name':name, 'status': status};
+                ajaxData = {'date':date, 'code':code, 'status': status};
                 initializeDataTable(ajaxUrl, ajaxData, columns, columnDefs, buttons);
             });
 

@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('product_stocks', function (Blueprint $table) {
-            $table->enum('option_warehouse',['general','extra-countable'])->nullable();
+            $table->enum('warehouse_type',['general','extra-countable'])->nullable();
         });
     }
 
