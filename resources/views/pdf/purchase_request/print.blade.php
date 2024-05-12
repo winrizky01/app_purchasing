@@ -47,8 +47,8 @@
                 <td style="text-transform: uppercase; text-align:center; border:1px solid;">{{ $data["data"]->code }}</td>
             </tr>
             <tr>
-                <td style="border:1px solid;">Date / Mont / Years</td>
-                <td style="text-transform: uppercase; text-align:center; border:1px solid;">{{ date("d/m/Y", strtotime($data["data"]->request_date)) }}</td>
+                <td style="border:1px solid;">Date / Month / Years</td>
+                <td style="text-transform: uppercase; text-align:center; border:1px solid;">{{ date("d/m/Y", strtotime($data["data"]->date)) }}</td>
             </tr>
             <tr>
                 <td style="text-transform: uppercase; text-align:center; border:1px solid;"><strong>Dilaporkan Oleh User</strong></td>
