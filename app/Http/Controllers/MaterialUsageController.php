@@ -137,6 +137,9 @@ class MaterialUsageController extends Controller
             ]);
 
             if($usage){
+                $closedStatusDocument  = findAllStatusGeneral(["name"=>"Closed"]);
+                $processStatusDocument = findAllStatusGeneral(["name"=>"Processed"]);
+
                 $materialRequestId = 0;
                 foreach($request->material_usage_detail as $detail){
                     if($request->expectsJson()){
@@ -174,30 +177,43 @@ class MaterialUsageController extends Controller
                         return handleErrorResponse($request, "Opps, error product stock log", 'inventory/material-usage', 404, null);
                     }
 
-                    // ubah status material request detail menjadi close 
+                    // ubah status material request detail menjadi close
                     // karena sudah dipanggil / digunakan 
                     // pada material usage detail
-                    $materialRequestId = $material_request_id;
-                    $requestDetail = MaterialRequestDetail::find($material_request_detail_id);
-                    $closedStatusDocument = findAllStatusGeneral(["name"=>"Closed"]);
+                    $materialRequestId    = $material_request_id;
+                    $requestDetail        = MaterialRequestDetail::find($material_request_detail_id);
                     $requestDetail->document_status_id = $closedStatusDocument->id; // buat menjadi close karena sudah digunakan
                     $requestDetail->save();
-
                     if(!$requestDetail){
                         DB::rollback();
                         return handleErrorResponse($request, "Opps, error crated material usage detail", 'inventory/material-usage', 404, null);
                     }
                 }
 
-                // ubah status material request menjadi process
-                $processStatusDocument = findAllStatusGeneral(["name"=>"Processed"]);
+                // ubah status material request menjadi
+                // process jika di proses sebagian
+                // closed jika di proses seluruhnya
                 $materialRequest = MaterialRequest::find($materialRequestId);
+                $checkMRD = MaterialRequestDetail::where("material_request_id", $materialRequestId)->get();
+                $newStatusMR = "";
+                $count       = 0;
+                $countClosed = 0;
+                foreach($checkMRD as $ck){
+                    if($ck->document_status_id == $closedStatusDocument->id){
+                        $countClosed++;
+                    }
+                    $count++;
+                }
                 $materialRequest->document_status_id = $processStatusDocument->id;
+                if($count == $countClosed){
+                    $materialRequest->document_status_id = $closedStatusDocument->id;
+                }
                 $materialRequest->save();
                 if(!$materialRequest){
                     DB::rollback();
                     return handleErrorResponse($request, "Opps, error created material usage detail", 'inventory/material-usage', 404, null);
                 }
+                // ubah status material request menjadi
             }
         } catch (Exception $e) {
             DB::rollback();

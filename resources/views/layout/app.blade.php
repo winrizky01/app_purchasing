@@ -319,6 +319,7 @@
                     $('.card').addClass('blur');
                 },
                 success: function(response) {
+                    console.log(response)
                     $('.sk-wave').hide();
                     $('.card').removeClass('blur');
 

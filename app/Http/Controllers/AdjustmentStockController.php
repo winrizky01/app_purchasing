@@ -99,7 +99,7 @@ class AdjustmentStockController extends Controller
     public function create(Request $request)
     {
         $check_role = Role::find(auth()->user()->role);
-        if(($check_role->name !== "Superadmin")&&($check_role->name !== "End User")){
+        if(($check_role->name !== "Superadmin")){
             return handleErrorResponse($request, 'Opps, sorry you dont have access!', 'inventory/material-request', 404, null);
         }
 
@@ -203,16 +203,6 @@ class AdjustmentStockController extends Controller
                         }    
                     }
                 }
-
-                $getDocumentStatus = findAllStatusGeneral(["id"=>$request->document_status_id]);
-                if($getDocumentStatus->name == "Submit"){
-                    // $approval = approvalTransaction($this->type_transaction_id, $materialRequest->id, $newDocumentStatus->id);
-                    // if($approval == false){
-                    //     DB::rollback();
-                    //     return handleErrorResponse($request, "Opps, error approval data", 'inventory/adjustment-stock', 404, null);
-                    // }
-                }
-
             }
         } catch (Exception $e) {
             DB::rollback();

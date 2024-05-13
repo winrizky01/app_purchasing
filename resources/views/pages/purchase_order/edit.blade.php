@@ -14,20 +14,60 @@
                         <div class="card-body row g-3">
                             <div class="row mb-3">
                                 <div class="col">
-                                    <label class="form-label" for="material_request_type_id">Type Material Request</label>
-                                    <select class="form-select select2" id="material_request_type_id" name="material_request_type_id" data-allow-clear="true" required>
+                                    <label class="form-label" for="purchase_type_id">Type Purchase Request</label>
+                                    <select class="form-select select2" id="purchase_type_id" name="purchase_type_id" data-allow-clear="true">
                                         <option value="">Select Value</option>
                                     </select>
                                 </div>
+                                <div class="col">
+                                    <label class="form-label" for="date">Request Date</label>
+                                    <input type="text" class="form-control" id="date" name="date"
+                                        value="{{ date('d-m-Y', strtotime($data->date)) }}" readonly>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
                                 <div class="col">
                                     <label class="form-label" for="code">No. Document</label>
                                     <input type="text" class="form-control" id="code" name="code" value="{{ $data->code }}" readonly>
                                 </div>
                                 <div class="col">
-                                    <label class="form-label" for="request_date">Request Date</label>
-                                    <input type="text" class="form-control" id="request_date" name="request_date"
-                                        value="{{ date('d-m-Y', strtotime($data->request_date)) }}" readonly>
+                                    <label class="form-label" for="effective_date">Estimation Required</label>
+                                    <input type="date" class="form-control" id="effective_date" name="effective_date" value="{{ date('Y-m-d', strtotime($data->effective_date)) }}" required>
                                 </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col">
+                                    <label class="form-label" for="department_id">Department</label>
+                                    <select class="form-select select2" data-allow-clear="true" id="department_id" name="department_id" required>
+                                        <option value="">Select Value</option>
+                                    </select>
+                                </div>
+                                <div class="col">
+                                    <label class="form-label" for="division_id">Divisi</label>
+                                    <select class="form-select select2" data-allow-clear="true" id="division_id" name="division_id" required>
+                                        <option value="">Select Value</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col">
+                                    <label class="form-label" for="warehouse_id">Warehouse</label>
+                                    <select class="form-select select2" name="warehouse_id" id="warehouse_id" data-allow-clear="true" required>
+                                        <option value="">Select Value</option>
+                                    </select>
+                                </div>
+                                <div class="col">
+                                    <label class="form-label" for="remark_id">Remaks</label>
+                                    <select class="form-select select2" name="remark_id" id="remark_id" data-allow-clear="true" required>
+                                        <option value="">Select Value</option>
+                                    </select>
+                                </div>
+                                <div class="col">
+                                    <label class="form-label" for="document_status_id">Status</label>
+                                    <select class="form-select select2" name="document_status_id" id="document_status_id" data-allow-clear="true" required>
+                                        <option value="">Select Value</option>
+                                    </select>
+                                </div>                
                             </div>
                             <div class="row mb-3">
                                 <div class="col">
@@ -51,24 +91,8 @@
                             </div>
                             <div class="row mb-3">
                                 <div class="col">
-                                    <label class="form-label" for="justification">Justification</label>
-                                    <textarea class="form-control" id="justification" name="justification" rows="1">{{ $data->justification }}</textarea>
-                                </div>
-                                <div class="col">
-                                    <div class="row">
-                                        <div class="col">
-                                            <label class="form-label" for="remark_id">Remaks</label>
-                                            <select class="form-select select2" name="remark_id" id="remark_id" data-allow-clear="true" required>
-                                                <option value="">Select Value</option>
-                                            </select>
-                                        </div>
-                                        <div class="col">
-                                            <label class="form-label" for="document_status_id">Status</label>
-                                            <select class="form-select select2" name="document_status_id" id="document_status_id" data-allow-clear="true" required>
-                                                <option value="">Select Value</option>
-                                            </select>
-                                        </div>                
-                                    </div>
+                                    <label class="form-label" for="description">Justification</label>
+                                    <textarea class="form-control" id="description" name="description" rows="3">{{ $data->description }}</textarea>
                                 </div>
                             </div>
                             <div class="row mb-3">
@@ -80,18 +104,17 @@
 
                             <div class="col-md-12">
                                 <div class="divider">
-                                    <div class="divider-text">Material Request Detail</div>
+                                    <div class="divider-text">Purchase Request Detail</div>
                                 </div>
                             </div>
                             <div class="col-md-2">
                                 <button class="btn btn-sm btn-primary" type="button" id="showModal">Add Product</button>
                             </div>
                             <div class="col-md-12">
-                                <table class="table" id="listMaterialDetail">
+                                <table class="table" id="listPurchaseDetail">
                                     <thead>
                                         <th>Cat.</th>
                                         <th>Product</th>
-                                        <th>Function</th>
                                         <th>Unit</th>
                                         <th style="width: 12%">Qty</th>
                                         <th>Note</th>
@@ -101,15 +124,14 @@
                                         @php
                                             $index = 0;
                                         @endphp
-                                        @foreach ($data->material_request_details as $item)
+                                        @foreach ($data->detail as $item)
                                             <tr id="{{ $item->product_id }}">
-                                                <input type="hidden" name="material_request_details[{{$index}}][product_id]" value="{{ $item->product_id }}">
+                                                <input type="hidden" name="purchase_request_details[{{$index}}][product_id]" value="{{ $item->product_id }}">
                                                 <td>{{ $item->product->product_category->name }}</td>
-                                                <td>{{ $item->product->name }}</td>
-                                                <td>{{ $item->product->description }}</td>
+                                                <td>{{ $item->product->name }} - {{ $item->product->description }}</td>
                                                 <td>{{ $item->product->product_unit["name"] }}</td>
-                                                <td style="text-transform: capitalize"><input type="number"class="form-control" name="material_request_details[{{$index}}][qty]" value="{{ $item->qty }}"></td>
-                                                <td style="text-transform: capitalize"><input type="text" class="form-control" name="material_request_details[{{$index}}][product_note]" value="{{ $item->notes }}"/></td>
+                                                <td style="text-transform: capitalize"><input type="number"class="form-control" name="purchase_request_details[{{$index}}][qty]" value="{{ $item->qty }}"></td>
+                                                <td style="text-transform: capitalize"><input type="text" class="form-control" name="purchase_request_details[{{$index}}][product_note]" value="{{ $item->notes }}"/></td>
                                                 <td><button type="button" class="btn btn-danger btn-sm deleteList"><i class="fa fa-trash"></i></button></td>                        
                                             </tr>
                                             @php
@@ -121,7 +143,7 @@
                             </div>
                             <div class="col-md-12">
                                 <div class="divider">
-                                    <div class="divider-text">Material Request Detail</div>
+                                    <div class="divider-text">Purchase Request Detail</div>
                                 </div>
                             </div>
                             <div class="col-md-12 text-muted" style="font-size: 8pt">
@@ -130,7 +152,7 @@
                             </div>
                         </div>
                         <div class="card-footer border-top py-3">
-                            <a href="{{ url('inventory/material-request') }}" class="btn btn-secondary btn-sm">Cancel</a>
+                            <a href="{{ url('purchasing/purchase-request') }}" class="btn btn-secondary btn-sm">Cancel</a>
                             @if(session('role')->name == "Tech Support")
                             <button type="button" id="buttonModalReject" data-value="Reject" class="btn btn-danger btn-sm buttonModalConfirm">Reject</button>
                             <button type="submit" id="buttonModalApproved" data-value="Approved" class="btn btn-primary btn-sm buttonModalConfirm">Submit</button>
@@ -220,7 +242,10 @@
         var dataId          = "{{ $data->id }}";
         var formCheck       = true;
         var formMode        = "";
-        var existingMeterialRequestType = <?php echo json_encode($data->type_material_request); ?>;
+        var existingPurchaseRequestType = <?php echo json_encode($data->type_purchase_request); ?>;
+        var existingDepartment          = <?php echo json_encode($data->department_id); ?>;
+        var existingDivision            = <?php echo json_encode($data->division_id); ?>;
+        var existingWarehouse           = <?php echo json_encode($data->warehouse_id); ?>;
         var existingRemarkId            = <?php echo json_encode($data->remark_id); ?>;
         var documentSatus               = <?php echo json_encode($data->document_status->name);?>;
         var existingDocumentStatus      = <?php echo json_encode($data->document_status_id);?>;
@@ -303,6 +328,24 @@
                 'type': 'GET'
             });
             requestSelectAjax({
+                'url' : '{{ url("master/department/select") }}',
+                'data': [],
+                'optionType' : 'department',
+                'type': 'GET'
+            });
+            requestSelectAjax({
+                'url' : '{{ url("master/division/select") }}',
+                'data': [],
+                'optionType' : 'division',
+                'type': 'GET'
+            });
+            requestSelectAjax({
+                'url' : '{{ url("master/warehouse/select") }}',
+                'data': [],
+                'optionType' : 'warehouse',
+                'type': 'GET'
+            });
+            requestSelectAjax({
                 'url' : '{{ url("setting/general/select?type=remark_id") }}',
                 'data': [],
                 'optionType' : 'remark',
@@ -323,9 +366,6 @@
                     // Jika ada perubahan pada input tertentu, atur isChanged ke true
                     if (newValue !== oldValue) {
                         anyChange = true;
-                        console.log("Field Name: " + fieldName);
-                        console.log("New Value: " + newValue);
-                        console.log("Old Value: " + oldValue);
                         return false; // Keluar dari loop karena sudah ada perubahan
                     }
                 });
@@ -385,13 +425,13 @@
                         var modalCenterTitle = "Confirm Reject Data";
                         var modalMessage = "Please, fill the reason!";
                         $('#modalNote').removeClass("d-none");
-                        $('form').attr('action','{{ url("inventory/material-request/reject")}}'+'/'+dataId);
+                        $('form').attr('action','{{ url("purchasing/purchase-request/reject")}}'+'/'+dataId);
                     }
                     else if(mode == 'Revision'){
                         var modalCenterTitle = "Confirm Revision Data";
                         var modalMessage = "Please, fill the reason!";
                         $('#modalNote').removeClass("d-none");
-                        $('form').attr('action','{{ url("inventory/material-request/revision")}}'+'/'+dataId);
+                        $('form').attr('action','{{ url("purchasing/purchase-request/revision")}}'+'/'+dataId);
                     }
                     else if(mode == "Approved"){
                         if($('#remark_id').val() == ""){
@@ -411,13 +451,13 @@
                         else{
                             var modalMessage = "Are you sure to approve this data?";
                         }
-                        $('form').attr('action','{{ url("inventory/material-request/update")}}'+'/'+dataId);
+                        $('form').attr('action','{{ url("purchasing/purchase-request/update")}}'+'/'+dataId);
                     }
                     else if(mode == "Update"){
                         var modalCenterTitle = "Confirm Update Data";
                         var modalMessage = "Are you sure to update this data?";
                         $('#modalNote').addClass("d-none");
-                        $('form').attr('action','{{ url("inventory/material-request/update")}}'+'/'+dataId);
+                        $('form').attr('action','{{ url("purchasing/purchase-request/update")}}'+'/'+dataId);
                     }
 
                     formMode = mode;
@@ -458,15 +498,30 @@
             var existingId = "";
             if (optionType == 'product_category') {
                 id = "#modalProductCategory";
+            } else if(optionType == "material_request_type") {
+                id = "#purchase_type_id";
+                existingId = existingPurchaseRequestType;
+            } else if (optionType == "department"){
+                id = "#department_id";
+                existingId = existingDepartment;
+            } else if (optionType == "division"){
+                id = "#division_id";
+                existingId = existingDivision;
+            } else if (optionType == "warehouse"){
+                id = "#warehouse_id";
+                existingId = existingWarehouse;
+            } else if (optionType == "remark"){
+                id = "#remark_id";
+                existingId = existingRemarkId;
             } else if (optionType == 'document_status') {
                 id = "#document_status_id";
                 existingId = existingDocumentStatus;
-            } else if (optionType == 'remark') {
-                id = "#remark_id";
-                existingId = existingRemarkId;
-            } else if (optionType == 'material_request_type'){
-                id = "#material_request_type_id";
-                existingId = existingMeterialRequestType;
+            } else if (optionType == 'add_product_machine') {
+                id = "#modalAddProduct-machine_id";
+            } else if (optionType == 'add_product_category'){
+                id = "#productCategory";
+            } else if (optionType == 'add_product_unit'){
+                id = "#modalAddProduct-unit_id";
             }
             
             $.each(response.results, function(index, data) {
@@ -493,7 +548,7 @@
             var tempAccess = param["data"]['id']
             var e = 0;
             var index = 0;
-            $('#listMaterialDetail tbody tr').each(function(){
+            $('#listPurchaseDetail tbody tr').each(function(){
                 if($(this).attr('id') == tempAccess){
                     e++;
                 }
@@ -505,18 +560,24 @@
                 return false;
             }
             else{
-                var html = '<tr id="'+tempAccess+'">'+
-                        '<input type="hidden" name="material_request_details['+index+'][product_id]" value="'+tempAccess+'">'+
-                        '<td style="text-transform: capitalize">'+param["data"]["product_category"]["name"]+'</td>'+
-                        '<td style="text-transform: capitalize">'+param["data"]["name"]+'</td>'+
-                        '<td style="text-transform: capitalize">'+param["data"]["description"]+'</td>'+
-                        '<td style="text-transform: capitalize">'+param["data"]["product_unit"]["name"]+'</td>'+
-                        '<td style="text-transform: capitalize"><input type="number"class="form-control" name="material_request_details['+index+'][qty]" value="'+param["qty"]+'"></td>'+
-                        '<td style="text-transform: capitalize"><input type="text" class="form-control" name="material_request_details['+index+'][product_note]"/></td>'+
-                        '<td><button type="button" class="btn btn-danger btn-sm deleteList"><i class="fa fa-trash"></i></button></td>'+
-                    '<tr>';
+                if(param['data']['product_category']['name'] == "Sparepart"){
+                    var description = param["data"]["name"] + ' - ' + param["data"]["description"] + ' - ' + param["data"]["dimension"] + ' - ' + param["data"]["part_number"];
+                }
+                else{
+                    var description = param["data"]["name"] + ' - ' + param["data"]["description"];
+                }
 
-                $("#listMaterialDetail tbody").append(html);
+                var html = '<tr id="'+tempAccess+'">'+
+                            '<input type="hidden" name="purchase_request_details['+index+'][product_id]" value="'+tempAccess+'">'+
+                            '<td style="text-transform: capitalize">'+param["data"]["product_category"]["name"]+'</td>'+
+                            '<td style="text-transform: capitalize">'+description+'</td>'+
+                            '<td style="text-transform: capitalize">'+param["data"]["product_unit"]["name"]+'</td>'+
+                            '<td style="text-transform: capitalize"><input type="number"class="form-control" name="purchase_request_details['+index+'][qty]" value="'+param["qty"]+'"></td>'+
+                            '<td style="text-transform: capitalize"><input type="text" class="form-control" name="purchase_request_details['+index+'][product_note]"/></td>'+
+                            '<td><button type="button" class="btn btn-danger btn-sm deleteList"><i class="fa fa-trash"></i></button></td>'+
+                        '</tr>';
+
+                $("#listPurchaseDetail tbody").append(html);
             }
 
         }

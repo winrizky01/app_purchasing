@@ -224,10 +224,12 @@
                     var productId   = $(row).find('input[name^="material_usage_detail["][name$="[product_id]"]').val();
                     var warehouseId = $('#warehouse_id').val(); // Ambil ID gudang dari form
                     var qty         = $(row).find('input[name^="material_usage_detail["][name$="[qty]"]').val();
+                    var option_warehouse = "";
 
                     if((productId != "")&&(warehouseId != "")&&(qty != "")){
                         // Panggil fungsi untuk memeriksa stok untuk setiap produk
-                        checkStockForProduct(productId, warehouseId, qty, function(isValid) {
+                        checkStockForProduct(productId, warehouseId, qty, option_warehouse, function(isValid) {
+                            console.log(isValid)
                             totalRequestsPending--; // Kurangi total panggilan AJAX yang masih tertunda
 
                             if (!isValid.status) {

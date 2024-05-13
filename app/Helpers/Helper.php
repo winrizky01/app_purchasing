@@ -224,6 +224,8 @@ function transactionHistoryRevision($transactionType, $transaction_id){
 }
 
 /**
+ * note :
+ * stock_type_id => (IN / OUT)
  * stock history
  * stock warehouse
  * counter stock on hand in product table
@@ -249,23 +251,26 @@ function productStock($transactionType, $transaction_id, $warehouse_id, $stock_t
         return false;
     }
 
-    // recounter stock on hand in product table
-    $product = Product::find($product_id);
-    $current_stock = $product->stock;
-    if($stock_type_name->name == "IN"){
-        $new_stock = ($current_stock * 1) + ($qty * 1);
-    }
-    else{
-        $new_stock = ($current_stock * 1) - ($qty * 1);
+    // pastikan hanya ada stok produk general yang bisa diambil
+    if($warehouse->warehouse_type == "general"){
+        // recounter stock on hand in product table
+        $product = Product::find($product_id);
+        $current_stock = $product->stock;
+        if($stock_type_name->name == "IN"){
+            $new_stock = ($current_stock * 1) + ($qty * 1);
+        }
+        else{
+            $new_stock = ($current_stock * 1) - ($qty * 1);
 
-        if($new_stock < 0){
+            if($new_stock < 0){
+                return false;
+            }
+        }
+        $product->stock = $new_stock;
+        $product->save();
+        if(!$product){
             return false;
         }
-    }
-    $product->stock = $new_stock;
-    $product->save();
-    if(!$product){
-        return false;
     }
 
     return true;
