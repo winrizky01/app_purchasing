@@ -13,33 +13,8 @@
                         <div class="card-body row g-3">
                             <div class="row mb-3">
                                 <div class="col">
-                                    <label class="form-label" for="purchase_type_id">Type Purchase Request</label>
-                                    @php
-                                        $readOnly = '';
-                                        $value = '';
-                                        if (auth()->user()->user_location_id != null) {
-                                            $readOnly = 'disabled';
-                                            if (auth()->user()->user_location->name == 'Site') {
-                                                $value = 'normal';
-                                            } else {
-                                                $value = 'general';
-                                            }
-                                        }
-                                    @endphp
-                                    <select class="form-select select2" data-allow-clear="true" id="purchase_type_id" name="purchase_type_id" required
-                                        {{ $readOnly }}>
-                                        <option value="">Select Value</option>
-                                        @php
-                                            $v = ['normal', 'general'];
-                                        @endphp
-                                        @for ($i = 0; $i < count($v); $i++)
-                                            @if ($v[$i] == $value)
-                                                <option value="{{ $v[$i] }}" selected>{{ ucfirst($v[$i]) }}</option>
-                                            @else
-                                                <option value="{{ $v[$i] }}">{{ ucfirst($v[$i]) }}</option>
-                                            @endif
-                                        @endFor
-                                    </select>
+                                    <label class="form-label" for="code">No. Document</label>
+                                    <input type="text" class="form-control" id="code" name="code" value="{{ $document_number }}" readonly>
                                 </div>
                                 <div class="col">
                                     <label class="form-label" for="date">Request Date</label>
@@ -48,10 +23,6 @@
                                 </div>
                             </div>
                             <div class="row mb-3">
-                                <div class="col">
-                                    <label class="form-label" for="code">No. Document</label>
-                                    <input type="text" class="form-control" id="code" name="code" value="{{ $document_number }}" readonly>
-                                </div>
                                 <div class="col">
                                     <label class="form-label" for="effective_date">Estimation Required</label>
                                     <input type="date" class="form-control" id="effective_date" name="effective_date" required>

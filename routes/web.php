@@ -127,15 +127,13 @@
             Route::prefix('adjustment-stock')->group(function(){
                 Route::get('/', [App\Http\Controllers\AdjustmentStockController::class, 'index']);
                 Route::get('/create', [App\Http\Controllers\AdjustmentStockController::class, 'create']);
-                Route::get('/edit/{id}', [App\Http\Controllers\AdjustmentStockController::class, 'edit']);
                 Route::get('/dataTables', [App\Http\Controllers\AdjustmentStockController::class, 'dataTables']);
                 Route::get('/select', [App\Http\Controllers\AdjustmentStockController::class, 'select']);
                 Route::get('/print/{id}', [App\Http\Controllers\AdjustmentStockController::class, 'print']);
 
                 Route::post('/store', [App\Http\Controllers\AdjustmentStockController::class, 'store']);
-                Route::post('/update/{id}', [App\Http\Controllers\AdjustmentStockController::class, 'update']);
 
-                Route::delete('/delete/{id}', [App\Http\Controllers\AdjustmentStockController::class, 'destroy']);
+                // Route::delete('/delete/{id}', [App\Http\Controllers\AdjustmentStockController::class, 'destroy']);
             });
 
             Route::prefix('report')->group(function(){

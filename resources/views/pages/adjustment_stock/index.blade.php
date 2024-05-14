@@ -162,15 +162,15 @@
                 orderable: false,
                 render: function(data, type, full, meta) {
                     var action = '<div class="d-flex align-items-center">';
-                    if(role == "End User"){
-                        action += '<a href="{{ url("inventory/material-request/show") }}/' + full.id + '" class="text-body"><i class="ti ti-eye ti-sm mx-2"></i></a>';
-                    }
-                    else if((role == "Tech Support")||(role == "Plan Manager")){
-                        action += '<a href="{{ url("inventory/material-request/show") }}/' + full.id + '" class="text-body"><i class="ti ti-eye ti-sm mx-2"></i></a>';
-                    }
-                    else{
-                        action += '<a href="{{ url("inventory/material-request/show") }}/' + full.id + '" class="text-body"><i class="ti ti-eye ti-sm mx-2"></i></a>';
-                    }
+                    // if(role == "End User"){
+                    //     action += '<a href="{{ url("inventory/material-request/show") }}/' + full.id + '" class="text-body"><i class="ti ti-eye ti-sm mx-2"></i></a>';
+                    // }
+                    // else if((role == "Tech Support")||(role == "Plan Manager")){
+                    //     action += '<a href="{{ url("inventory/material-request/show") }}/' + full.id + '" class="text-body"><i class="ti ti-eye ti-sm mx-2"></i></a>';
+                    // }
+                    // else{
+                    //     action += '<a href="{{ url("inventory/material-request/show") }}/' + full.id + '" class="text-body"><i class="ti ti-eye ti-sm mx-2"></i></a>';
+                    // }
 
                     action += '<button type="button" class="btn btn-icon waves-effect download-record"><i class="ti ti-printer ti-sm me-2"></i></button> </div>';
 
@@ -215,7 +215,7 @@
                 var rowData = $('.datatables').DataTable().row(selectedRow).data();
                 rowData = rowData.id
                 $.ajax({
-                    url: '{{ url("inventory/material-request/print") }}/' + rowData,
+                    url: '{{ url("inventory/adjustment-stock/print") }}/' + rowData,
                     type: 'GET',
                     xhrFields: {
                         responseType: 'blob' // Mengindikasikan bahwa respons adalah binary data (blob)

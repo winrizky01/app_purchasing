@@ -22,6 +22,11 @@ class AdjustmentStock extends Model
         return $this->hasOne(General::class, 'id', 'document_status_id');
     }
 
+    public function type_adjustment()
+    {
+        return $this->hasOne(General::class, 'id', 'stock_type_id');
+    }
+
     public function detail()
     {
         return $this->hasMany(AdjustmentStockDetail::class, 'adjustment_stock_id','id');

@@ -330,305 +330,22 @@ class AdjustmentStockController extends Controller
      * function ada di class berbeda
      */
     public function update(Request $request, $id)
-    {
-        // page control
-        if(!pageControl($request)){
-            return redirect('/');
-        }
-        
-        $validator = Validator::make($request->all(),[
-            'material_request_type_id' => 'required',
-            'justification'      => 'required',
-            'document_status_id' => 'required',
-            'request_date'       => 'required',
-        ]);
-
-        if($validator->fails()){
-            return handleErrorResponse($request, 'The following fields are required !', 'inventory/material-request', 404, null);
-        }
-
-        $materialRequest = MaterialRequest::find($id);
-        if(!$materialRequest){
-            return handleErrorResponse($request, 'Opps, data not found!', 'inventory/material-request', 404, null);
-        }
-
-        $getDocumentStatus = findAllStatusGeneral(["id"=>$materialRequest->document_status_id]);
-        $getDocumentStatus = $getDocumentStatus->name;
-
-        if($getDocumentStatus == "Waiting Approval Tech Support"){
-            $newDocumentStatus = findAllStatusGeneral(["name"=>"Waiting Approval Plant Manager"]);
-        }
-        else if($getDocumentStatus == "Waiting Approval Plant Manager"){
-            $newDocumentStatus = findAllStatusGeneral(["name"=>"Approved Plant Manager"]);
-        }
-        else if($getDocumentStatus == "Revisied Plant Manager"){
-            $newDocumentStatus = findAllStatusGeneral(["name"=>"Waiting Approval Plant Manager"]);
-        }
-        else{
-            return handleErrorResponse($request, "Opps, error approval data!", 'inventory/material-request', 404, null);
-        }
-
-        DB::beginTransaction();
-        try {
-            $filephoto  = "";
-            $photo = "";
-            if ($request->hasFile('document_photo')) {
-                $filephoto= $request->file('document_photo');
-                $photo    = str_replace(" ", "-", $filephoto->getClientOriginalName());
-                $filephoto->move(public_path('template/assets/material_request/'), $photo);
-            }
-
-            $filepdf  = "";
-            $pdf = "";
-            if ($request->hasFile('document_pdf')) {
-                $filepdf= $request->file('document_pdf');
-                $pdf    = str_replace(" ", "-", $filepdf->getClientOriginalName());
-                $filepdf->move(public_path('template/assets/material_request/'), $pdf);
-            }
-
-            $materialRequest->type_material_request = $request->material_request_type_id;
-            $materialRequest->justification         = $request->justification;
-            $materialRequest->remark_id             = $request->remark_id;
-            $materialRequest->document_photo        = $photo !== "" ? 'template/assets/material_request/'.$photo : null;
-            $materialRequest->document_pdf          = $pdf !== "" ? 'template/assets/material_request/'.$pdf : null;
-            $materialRequest->document_status_id    = $newDocumentStatus->id;
-            $materialRequest->updated_at            = date("Y-m-d H:i:s");
-            $materialRequest->updated_by            = auth()->user()->id;
-            $materialRequest->last_reason           = null;
-            $materialRequest->save();
-
-            if($materialRequest){
-                $materialRequestDetail = MaterialRequestDetail::where("material_request_id", $id)->forceDelete();
-                if ($request->material_request_details) {
-                    foreach ($request->material_request_details as $key => $value) {
-                        if($request->expectsJson()){
-                            $product_id = null;
-                            $qty        = null;
-                            $notes      = null;    
-                        }
-                        else{
-                            $product_id = $value["product_id"];
-                            $qty        = $value["product_qty"];
-                            $notes      = $value["product_note"];
-                        }
-
-                        $materialRequestDetail = MaterialRequestDetail::create([
-                            'material_request_id' => $id,
-                            'product_id' => $product_id,
-                            'qty'        => $qty,
-                            'notes'      => $notes,
-                        ]);
-
-                        if (!$materialRequestDetail) {
-                            DB::rollback();
-                            return handleErrorResponse($request, "Opps, data failed created material request details", 'inventory/material-request', 404, null);
-                        }
-                    }
-                }
-
-                // tambahkan approval untuk pihak tech support di db tapi tidak perlu ditampilkan di frontend
-                if($getDocumentStatus == "Waiting Approval Tech Support"){
-                    $sid = findAllStatusGeneral(["name"=>"Approved Tech Support"]);
-                    $app = approvalTransaction($this->type_transaction_id, $materialRequest->id, $app->id);
-                }
-                // tambahkan approval untuk pihak tech support di db tapi tidak perlu ditampilkan di frontend
-
-                $approval = approvalTransaction($this->type_transaction_id, $materialRequest->id, $newDocumentStatus->id);
-                if($approval == false){
-                    DB::rollback();
-                    return handleErrorResponse($request, "Opps, error approval data", 'inventory/material-request', 404, null);
-                }
-            }
-        }
-        catch (Exception $e) {
-            DB::rollback();
-            return handleErrorResponse($request, $e->getMessage(), 'inventory/material-request', 404, null);
-        }
-
-        DB::commit();
-
-        if($request->expectsJson()){
-            return response()->json([
-                'status' => true,
-                'message'=> "Data successfuly updated.",
-                'code'   => 200,
-                'results'=> []
-            ], 200);
-        }
-        else{
-            Session::put('success','Data successfuly updated.');
-            return redirect()->to('inventory/material-request');
-        }
-    }
+    {}
 
     /**
      * permintaan pembatalan data
      */
     public function reject(Request $request, $id)
-    {
-        // page control
-        if(!pageControl($request)){
-            return redirect('/');
-        }            
-        
-        $validator = Validator::make($request->all(),[
-            'reason' => 'required',
-        ]);
-        if($validator->fails()){
-            return handleErrorResponse($request, 'The following fields are required !', 'inventory/material-request', 404, null);
-        }
-
-        DB::beginTransaction();
-        $materialRequest = MaterialRequest::find($id);
-        if(!$materialRequest){
-            return handleErrorResponse($request, 'Opps, data not found!', 'inventory/material-request', 404, null);
-        }
-
-        $getDocumentStatus = findAllStatusGeneral(["id"=>$materialRequest->document_status_id]);
-        if($getDocumentStatus->name == "Waiting Approval Tech Support"){
-            $newDocumentStatus = findAllStatusGeneral(["name"=>"Rejected Tech Support"]);
-        }
-        else if($getDocumentStatus->name == "Waiting Approval Plant Manager"){
-            $newDocumentStatus = findAllStatusGeneral(["name"=>"Rejected Plant Manager"]);
-        }
-        try {
-            $materialRequest->document_status_id = $newDocumentStatus->id;
-            $materialRequest->last_reason= $request->reason;
-            $materialRequest->updated_at = date("Y-m-d H:i:s");
-            $materialRequest->updated_by = auth()->user()->id;
-            $materialRequest->save();
-
-            if(!$materialRequest){
-                return handleErrorResponse($request, 'Opps, error material request.', 'inventory/material-request', 404, null);
-            }
-
-            $approval = approvalTransaction($this->type_transaction_id, $materialRequest->id, $newDocumentStatus->id);
-            if($approval == false){
-                DB::rollback();
-                return handleErrorResponse($request, "Opps, error approval data", 'inventory/material-request', 404, null);
-            }
-
-        } catch (Exception $e) {
-            DB::rollBack();
-            return handleErrorResponse($request, $e->getMessage(), 'inventory/material-request', 404, null);
-        }
-
-        DB::commit();
-
-        if($request->expectsJson()){
-            return response()->json([
-                'status' => true,
-                'message'=> "Data successfuly rejected.",
-                'code'   => 200,
-                'results'=> []
-            ], 200);
-        }
-        else {
-            Session::put('success','Data successfuly rejected.');
-            return redirect()->to('inventory/material-request');
-        }
-    }
+    {}
 
     /**
      * permintaan pembenaran data dari level atas (Tech Support Up)
      */
     public function revision(Request $request, $id)
-    {
-        // page control
-        if(!pageControl($request)){
-            return redirect('/');
-        }            
-        
-        $validator = Validator::make($request->all(),[
-            'reason' => 'required',
-        ]);
-        if($validator->fails()){
-            return handleErrorResponse($request, 'The following fields are required !', 'inventory/material-request', 404, null);
-        }
-
-        DB::beginTransaction();
-        $materialRequest = MaterialRequest::find($id);
-        if(!$materialRequest){
-            return handleErrorResponse($request, 'Opps, data not found!', 'inventory/material-request', 404, null);
-        }
-
-        $getDocumentStatus = findAllStatusGeneral(["name"=>"Revisied Plant Manager"]);
-        $getDocumentStatus = $getDocumentStatus->id;
-
-        try {
-            $materialRequest->document_status_id = $getDocumentStatus;
-            $materialRequest->last_reason = $request->reason;
-            $materialRequest->updated_at = date("Y-m-d H:i:s");
-            $materialRequest->updated_by = auth()->user()->id;
-            $materialRequest->save();
-
-            $revision = MaterialRequestRevision::create([
-                "material_request_id" => $materialRequest->id,
-                "reasons"       => $request->reason,
-                "user_id"       => auth()->user()->id,
-                "date"          => date("Y-m-d"),
-                "created_at"    => date("Y-m-d H:i:s"),
-                "created_by"    => auth()->user()->id,
-            ]);
-
-            $approval = approvalTransaction($this->type_transaction_id, $materialRequest->id, $newDocumentStatus->id);
-            if($approval == false){
-                DB::rollback();
-                return handleErrorResponse($request, "Opps, error approval data", 'inventory/material-request', 404, null);
-            }
-        } catch (Exception $e) {
-            DB::rollBack();
-            return handleErrorResponse($request, 'Opps, data failed to revision.', 'inventory/material-request', 404, null);
-        }
-
-        if($request->expectsJson()){
-            return response()->json([
-                'status' => true,
-                'message'=> "Data successfuly revisied.",
-                'code'   => 200,
-                'results'=> []
-            ], 200);
-        }
-        else {
-            Session::put('success','Data successfuly revisied.');
-            return redirect()->to('inventory/material-request');
-        }
-    }
+    {}
 
     public function destroy(Request $request, $id)
-    {
-        DB::beginTransaction();
-        $product = Product::find($id);
-        if(!$product){
-            return handleErrorResponse($request, 'Opps, data not found.', 'master/product', 404, null);
-        }
-
-        try {
-            $product->status     = "inactive";
-            $product->deleted_at = date("Y-m-d H:i:s");
-            $product->deleted_by = auth()->user()->id;
-            $product->save();
-            $product->delete();
-        } catch (Exception $e) {
-            DB::rollBack();
-            return handleErrorResponse($request, 'Opps, data failed to delete.', 'master/product', 404, null);
-        }
-
-        DB::commit();
-
-        if($request->expectsJson()){
-            return response()->json([
-                'status' => true,
-                'message'=> "Data successfuly deleted.",
-                'code'   => 200,
-                'results'=> []
-            ], 200);
-        }
-        else {
-            Session::put('success','Data successfuly deleted.');
-            return redirect()->to('master/product');
-        }
-    }
+    {}
 
     public function dataTables(Request $request)
     {
@@ -664,62 +381,27 @@ class AdjustmentStockController extends Controller
             return redirect('/');
         }            
 
-        $materialRequest = MaterialRequest::with([
-            'material_request_details',
-            'material_request_details.product',
-            'material_request_details.product.product_category',
-            'material_request_details.product.product_unit' ,
-            'material_request_details.product.product_machine.machine' ,
-            'department',
-            'division',
-            'remark',
-            'document_status',
-            'createdBy',
-            'last_update'])
+        $adjustment = AdjustmentStock::with([
+                'warehouse',
+                'document_status',
+                'type_adjustment',
+                'detail.product',
+                'detail.product.product_unit',
+            ])
             ->find($id);
 
-        $createdBy = User::with(['roleId'])->find($materialRequest->created_by);
+        $createdBy = User::with(['roleId'])->find($adjustment->created_by);
         $createdBy = ["name"=>$createdBy->name, "role"=>$createdBy->roleId->name];
 
-        $historyTechSupport = findAllStatusGeneral(["name"=>"Approved Tech Support"]);
-        $riviwedBy = DB::table("approvals")
-                        ->where("type_transaction_id", $this->type_transaction_id)
-                        ->where("transaction_id", $id)
-                        ->where("document_status", $historyTechSupport->id)
-                        ->orderBy("created_at", "DESC")
-                        ->get();
-        if(count($riviwedBy) > 0){
-            $riviwedBy = User::with(["roleId"])->find($riviwedBy[0]->user_id);
-            $riviwedBy = ["name"=>$riviwedBy->name, "role"=>$riviwedBy->roleId->name];
-        }
-        else{
-            $riviwedBy = [];
-        }
-
-        $historyPlantManager = findAllStatusGeneral(["name"=>"Approved Plant Manager"]);
-        $approvedBy = DB::table("approvals")
-                        ->where("type_transaction_id", $this->type_transaction_id)
-                        ->where("transaction_id", $id)
-                        ->where("document_status", $historyPlantManager->id)
-                        ->orderBy("created_at", "DESC")
-                        ->get();
-        if(count($approvedBy) > 0){
-            $approvedBy = User::with(["roleId"])->find($approvedBy[0]->user_id);
-            $approvedBy = ["name"=>$approvedBy->name, "role"=>$approvedBy->roleId->name];
-        }
-        else{
-            $approvedBy = [];
-        }
-
-        $signature = ["created"=>$createdBy, "riviwed"=>$riviwedBy, "approved"=>$approvedBy];
+        $signature = ["created"=>$createdBy, "riviwed"=>"", "approved"=>""];
 
         $data = [
-            'title'     => 'Material Request', 
-            'data'      => $materialRequest,
+            'title'     => 'Adjustment Stock', 
+            'data'      => $adjustment,
             'signature' => $signature
         ];
 
-        $pdfContent = view('pdf.material_request.print', compact('data'));
+        $pdfContent = view('pdf.adjustment_stock.print', compact('data'));
 
         $pdf = PDF::loadHtml($pdfContent);
         
