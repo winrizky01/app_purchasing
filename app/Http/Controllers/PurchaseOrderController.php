@@ -80,6 +80,12 @@ class PurchaseOrderController extends Controller
             return handleErrorResponse($request, 'The following fields are required !', 'purchasing/purchase-order', 404, null);
         }
 
+        try {
+            //code...
+        } catch (Exception $e) {
+            //throw $th;
+        }
+
     }
 
     public function edit(Request $request, $id)
