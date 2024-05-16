@@ -702,7 +702,7 @@ class PurchaseRequestController extends Controller
             $where[] = ["purchase_requests.code", "LIKE", "%".$request->code."%"];
         }
         if($request->status != ""){
-            $where[] = ['purchase_requests.document_status_id', $request->status];
+                $where[] =  ['purchase_requests.document_status_id', '=', $request->status];
         }
 
         $data = PurchaseRequest::with([
@@ -717,6 +717,22 @@ class PurchaseRequestController extends Controller
                                 ])
                                 ->where($where)
                                 ->get();
+        
+        if($request->mode != ""){
+            if($request->mode == "get_for_po"){
+                $data = PurchaseRequestDetail::with([
+                                                'product',
+                                                'product.product_category',
+                                                'product.product_unit',
+                                            ])
+                                            ->select(['purchase_request_details.*', 'pr.code', 'pr.date'])
+                                            ->join("purchase_requests as pr", "pr.id", "purchase_request_details.purchase_request_id")
+                                            ->whereIn("pr.document_status_id", [39,31])
+                                            ->where("purchase_request_details.document_status_id", 1)
+                                            ->get();
+            }
+        }
+
         return datatables()->of($data)->toJson();
     }
 

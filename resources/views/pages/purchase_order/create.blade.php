@@ -7,7 +7,7 @@
 
                 <div class="card">
                     <h5 class="card-header border-bottom mb-3">{{ $title }}</h5>
-                    <form id="form" action="{{ url('purchasing/purchase-request/store') }}" method="POST"
+                    <form id="form" action="{{ url('purchasing/purchase-order/store') }}" method="POST"
                         enctype="multipart/form-data">
                         @csrf
                         <div class="card-body row g-3">
@@ -18,14 +18,25 @@
                                 </div>
                                 <div class="col">
                                     <label class="form-label" for="date">Request Date</label>
-                                    <input type="text" class="form-control" id="date" name="date"
-                                        value="{{ date('d-m-Y') }}" disabled>
+                                    <input type="text" class="form-control" id="date" name="date" value="{{ date('d-m-Y') }}" readonly>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col">
+                                    <label class="form-label" for="effective_date">Vendor</label>
+                                    <select class="form-select select2" data-allow-clear="true" id="vendor_id" name="vendor_id[]" required>
+                                        <option value="">Select Value</option>
+                                    </select>
                                 </div>
                             </div>
                             <div class="row mb-3">
                                 <div class="col">
                                     <label class="form-label" for="effective_date">Estimation Required</label>
                                     <input type="date" class="form-control" id="effective_date" name="effective_date" required>
+                                </div>
+                                <div class="col">
+                                    <label class="form-label" for="max_date_delivery">Max Delivery</label>
+                                    <input type="date" class="form-control" id="max_date_delivery" name="max_date_delivery" required>
                                 </div>
                             </div>
                             <div class="row mb-3">
@@ -84,16 +95,17 @@
                                 </div>
                             </div>
                             <div class="col-md-4">
-                                <button class="btn btn-sm btn-primary" type="button" id="showModal" data-mode="showProduct">Show Product</button>
-                                <button class="btn btn-sm btn-primary" type="button" id="newProduct" data-mode="newProduct">New Product</button>
+                                <button class="btn btn-sm btn-primary" type="button" id="showModal" data-mode="showProduct">Show PR</button>
                             </div>
                             <div class="col-md-12">
                                 <table class="table" id="listPurchaseDetail">
                                     <thead>
-                                        <th>Cat.</th>
-                                        <th>Product</th>
+                                        <th>No PR</th>
+                                        <th>Request Date</th>
+                                        <th>Description</th>
                                         <th>Unit</th>
-                                        <th style="width: 12%">Qty</th>
+                                        <th>Qty</th>
+                                        <th style="width: 15%">Price</th>
                                         <th>Note</th>
                                         <th>Action</th>
                                     </thead>
@@ -107,7 +119,7 @@
                             </div>
                         </div>
                         <div class="card-footer border-top py-3">
-                            <a href="{{ url('purchasing/material-request') }}" class="btn btn-secondary btn-sm">Cancel</a>
+                            <a href="{{ url('purchasing/purchase-order') }}" class="btn btn-secondary btn-sm">Cancel</a>
                             <button type="submit" name="submitButton" class="btn btn-primary btn-sm">Submit</button>
                         </div>
                     </form>
@@ -137,8 +149,9 @@
                             <table class="datatables table border-top" id="modalProduct" style="font-size: 10pt">
                                 <thead>
                                     <tr>
-                                        <th>SKU</th>
-                                        <th>Name</th>
+                                        <th>No PR</th>
+                                        <th>PR Date</th>
+                                        <th>Description</th>
                                         <th>Unit</th>
                                         <th style="width: 20%">Qty</th>
                                         <th style="width: 20%">Actions</th>
@@ -152,103 +165,12 @@
         </div>
     </div>
 
-    <div class="modal fade" id="modalShowAddNewProduct" tabindex="-1" aria-modal="true">
-        <div class="modal-dialog modal-dialog-scrollable modal-sm" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" >New Product</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="newProduct">
-                        <div class="row mb-2">
-                            <div class="col-md-12 mb-2">
-                                <label for="" class="form-label">Product Category</label>
-                                <select class="form-select select2" name="modalAddProduct-product_category_id" data-allow-clear="true" id="productCategory" placeholder="All Products" required>
-                                </select>
-                            </div>
-                            <div class="col-md-12 mb-2">
-                                <label for="" class="form-label">SKU</label>
-                                <input class="form-control" type="text" name="modalAddProduct-sku" id="modalAddProduct-sku"/>
-                            </div>
-                            <div class="col-md-12 mb-2">
-                                <label for="" class="form-label">Code</label>
-                                <input class="form-control" type="text" name="modalAddProduct-code" id="modalAddProduct-code"/>
-                            </div>
-                            <div class="col-md-12 mb-2">
-                                <label for="" class="form-label">Name</label>
-                                <input class="form-control" type="text" name="modalAddProduct-name" id="modalAddProduct-name"/>
-                            </div>
-                            <div class="col-md-12 mb-2">
-                                <label for="" class="form-label">Description</label>
-                                <textarea class="form-control" name="modalAddProduct-description" id="modalAddProduct-description"></textarea>
-                            </div>
-                            <div class="col-md-12 mb-2">
-                                <label for="" class="form-label">Unit</label>
-                                <select class="form-control" name="modalAddProduct-unit_id" id="modalAddProduct-unit_id"></select>
-                            </div>
-                            <div class="col-md-12 mb-2">
-                                <label for="" class="form-label">In Stock</label>
-                                <select class="form-control" name="modalAddProduct-is_inventory" id="modalAddProduct-is_inventory">
-                                    <option value="yes">Yes</option>
-                                    <option value="no">No</option>
-                                </select>
-                            </div>
-                            <div class="col-md-12 mb-2">
-                                <div class="divider">
-                                    <div class="divider-text">Additional</div>
-                                </div>
-                            </div>
-                            <div class="col-md-12 mb-2">
-                                <label for="" class="form-label">Dimensi</label>
-                                <input class="form-control" type="text" name="modalAddProduct-dimension" id="modalAddProduct-dimension"/>
-                            </div>
-                            <div class="col-md-12 mb-2">
-                                <label for="" class="form-label">Part Number</label>
-                                <input class="form-control" type="text" name="modalAddProduct-part_number" id="modalAddProduct-part_number"/>
-                            </div>
-                            <div class="col-md-12 mb-2">
-                                <label for="" class="form-label">For Machine</label>
-                                <select id="modalAddProduct-machine_id" name="modalAddProduct-machine_id[]" class="form-select select2" data-allow-clear="true" multiple>
-                                </select>
-                            </div>
-                            <div class="col-md-12 mb-2">
-                                <label for="" class="form-label">Spesification</label>
-                                <textarea class="form-control" name="modalAddProduct-spesification" id="modalAddProduct-spesification"></textarea>
-                            </div>
-                            <div class="col-md-12 mb-2">
-                                <div class="divider">
-                                    <div class="divider-text">Additional</div>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-label-secondary waves-effect" data-bs-dismiss="modal">
-                      Close
-                    </button>
-                    <button type="button" class="btn btn-primary waves-effect waves-light" id="submitNewProduct">Save</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <script type="text/javascript">
         // Setup Datatable
-        var ajaxUrl  = "{{ url('master/product/dataTables') }}";
-        var ajaxData = [];
-        var columns  = [{ data: 'sku' }, { data: 'name' }, {data: 'product_unit.name'}, { data: 'qty' }, { data: 'action' }];
+        var ajaxUrl  = "{{ url('purchasing/purchase-request/dataTables') }}";
+        var ajaxData = {"mode":"get_for_po"};
+        var columns  = [{ data: 'code' }, { data: 'date' }, { data: 'product.name' }, { data: 'product.product_unit.name' }, { data: 'qty' }, { data: 'action' }];
         var columnDefs  =  [
-            {
-                // Qty
-                targets: -2,
-                render: function(data, type, full, meta) {
-                    var status = '<input type="number" min="1" class="form-control form-control-sm" id="modalQty" name="modalQty"/>';
-
-                    return (status);
-                }
-            },
             {
                 // Actions
                 targets: -1,
@@ -266,9 +188,9 @@
     
         $(document).ready(function() {
             requestSelectAjax({
-                'url' : '{{ url("setting/general/select?type=product_category_id") }}',
+                'url' : '{{ url("master/vendor/select") }}',
                 'data': [],
-                'optionType' : 'product_category',
+                'optionType' : 'vendor',
                 'type': 'GET'
             });
             requestSelectAjax({
@@ -397,15 +319,9 @@
 
             $('body').on('click', '.btnAddProductModal', function(){
                 var selectedRow = $(this).closest('tr');
-                var modalQty    = selectedRow.find('#modalQty').val();
                 var rowData     = $('#modalProduct').DataTable().row(selectedRow).data();
 
-                if(modalQty == ""){
-                    toasMassage({status:false, message:'Opps, please fill qty product!'});
-                    return false;
-                }
-
-                handleAddModalProduct({'data':rowData, 'qty': modalQty});
+                handleAddModalProduct({'data':rowData});
             });
             $('body').on('click', '.deleteList', function(){
                 $(this).closest('tr').remove();
@@ -433,8 +349,8 @@
 
         function setDataSelect(optionType, response) {
             var id = "";
-            if (optionType == 'product_category') {
-                id = "#modalProductCategory";
+            if (optionType == 'vendor') {
+                id = "#vendor_id";
             } else if (optionType == "department"){
                 id = "#department_id";
             } else if (optionType == "division"){
@@ -445,12 +361,6 @@
                 id = "#remark_id";
             } else if (optionType == 'document_status') {
                 id = "#document_status_id";
-            } else if (optionType == 'add_product_machine') {
-                id = "#modalAddProduct-machine_id";
-            } else if (optionType == 'add_product_category'){
-                id = "#productCategory";
-            } else if (optionType == 'add_product_unit'){
-                id = "#modalAddProduct-unit_id";
             }
             
             $.each(response.results, function(index, data) {
@@ -474,20 +384,19 @@
                 return false;
             }
             else{
-                if(param['data']['product_category']['name'] == "Sparepart"){
-                    var description = param["data"]["name"] + ' - ' + param["data"]["description"] + ' - ' + param["data"]["dimension"] + ' - ' + param["data"]["part_number"];
-                }
-                else{
-                    var description = param["data"]["name"] + ' - ' + param["data"]["description"];
-                }
-
                 var html = '<tr id="'+tempAccess+'">'+
-                        '<input type="hidden" name="purchase_request_details['+index+'][product_id]" value="'+tempAccess+'">'+
-                        '<td style="text-transform: capitalize">'+param["data"]["product_category"]["name"]+'</td>'+
-                        '<td style="text-transform: capitalize">'+description+'</td>'+
-                        '<td style="text-transform: capitalize">'+param["data"]["product_unit"]["name"]+'</td>'+
-                        '<td style="text-transform: capitalize"><input type="number"class="form-control" name="purchase_request_details['+index+'][qty]" value="'+param["qty"]+'"></td>'+
-                        '<td style="text-transform: capitalize"><input type="text" class="form-control" name="purchase_request_details['+index+'][product_note]"/></td>'+
+                        '<input type="hidden" name="purchase_order_details['+index+'][id]" value="'+tempAccess+'">'+
+                        '<input type="hidden" name="purchase_order_details['+index+'][purchase_request_id]" value="'+param["data"]["purchase_request_id"]+'">'+
+                        '<input type="hidden" name="purchase_order_details['+index+'][purchase_request_detail_id]" value="'+param["data"]["id"]+'">'+
+                        '<input type="hidden" name="purchase_order_details['+index+'][product_id]" value="'+param["data"]["product_id"]+'">'+
+                        '<input type="hidden" name="purchase_order_details['+index+'][qty]" value="'+param["data"]["qty"]+'">'+
+                        '<td style="text-transform: capitalize">'+param["data"]["code"]+'</td>'+
+                        '<td style="text-transform: capitalize">'+param["data"]["date"]+'</td>'+
+                        '<td style="text-transform: capitalize">'+param["data"]["product"]["name"]+'</td>'+
+                        '<td style="text-transform: capitalize">'+param["data"]["product"]["product_unit"]["name"]+'</td>'+
+                        '<td style="text-transform: capitalize">'+param["data"]["qty"]+'</td>'+
+                        '<td style="text-transform: capitalize"><input type="number"class="form-control" name="purchase_order_details['+index+'][price]"></td>'+
+                        '<td style="text-transform: capitalize"><input type="text" class="form-control" name="purchase_order_details['+index+'][note]"/></td>'+
                         '<td><button type="button" class="btn btn-danger btn-sm deleteList"><i class="fa fa-trash"></i></button></td>'+
                     '</tr>';
 

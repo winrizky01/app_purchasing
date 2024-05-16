@@ -10,6 +10,8 @@ use App\Models\User;
 use App\Models\Role;
 use App\Models\General;
 use App\Models\Product;
+use App\Models\PurchaseRequest;
+use App\Models\PurchaseRequestDetail;
 
 
 use DB;
@@ -61,7 +63,24 @@ class PurchaseOrderController extends Controller
     }
 
     public function store(Request $request)
-    {}
+    {
+        var_dump($request->all());die();
+        $validator = Validator::make($request->all(),[
+            'code'                => 'required',
+            'effective_date'      => 'required',
+            'max_date_delivery'   => 'required',
+            'department_id'       => 'required',
+            'division_id'         => 'required',
+            'warehouse_id'        => 'required',
+            'remark_id'           => 'required',
+            'document_status_id'  => 'required',
+        ]);
+
+        if($validator->fails()){
+            return handleErrorResponse($request, 'The following fields are required !', 'purchasing/purchase-order', 404, null);
+        }
+
+    }
 
     public function edit(Request $request, $id)
     {}

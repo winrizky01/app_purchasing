@@ -76,7 +76,22 @@ class VendorController extends Controller
 
     public function create(Request $request)
     {
-        $data["title"] = "Add Vendor";
+        $vendor = Vendor::where("code", "LIKE", "%VEN%")->orderBy("created_at", "DESC")->first();
+        $last_code = "0000";
+        if($vendor){
+            $last_code = substr($vendor->code, -4); // ambil 4 digit diakhir
+        }    
+        $count_string   = strlen($last_code); // hitung total string
+        $stringToInt    = ($last_code * 1) + 1; // tambahkan 1 angka setiap kode akhir
+        $newCountString = strlen($stringToInt); // hitung ulang total string
+        $new_code       = "";
+        for($i=0; $i<($count_string-$newCountString); $i++){
+            $new_code = $new_code."0";
+        }
+        $new_code = $new_code.$stringToInt;
+
+        $data["title"] = "Add Vendor";        
+        $data["code"] = "VEN-".$new_code;
 
         $view = "pages.vendor.create";
         return view($view, $data);

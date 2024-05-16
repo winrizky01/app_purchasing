@@ -33,7 +33,7 @@
                                 <div class="row mb-3">
                                     <div class="col">
                                         <label class="form-label" for="code">Code</label>
-                                        <input type="text" class="form-control" id="code" placeholder="Code" name="code" required>
+                                        <input type="text" class="form-control" id="code" placeholder="Code" name="code" value="{{ $code }}" required>
                                     </div>
                                     <div class="col">
                                         <label class="form-label" for="tax">TAX</label>
